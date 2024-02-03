@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { StereoscopicEffects } from 'threejs-StereoscopicEffects';
 
-let scene, lights, camera, renderer, controls, stereofx, ship;
+let scene, lights, camera, renderer, controls, stereofx;
 let cube_types = [
 	new THREE.MeshLambertMaterial({ color: 0x333333, transparent: true, opacity: 0.8 }),
 	new THREE.MeshLambertMaterial({ color: 0x0066d4, transparent: true, opacity: 0.8 }),
@@ -95,6 +95,13 @@ function addCube(i, t, px, py, pz, mx, my, mz) {
 	scene.add(edges);
 }
 
+function addPath(pts) {
+	const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+	const geometry = new THREE.BufferGeometry().setFromPoints(pts);
+	const line = new THREE.Line(geometry, material);
+	scene.add(line);
+}
+
 const b64_digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 function b64_itoa(number) {
@@ -156,6 +163,35 @@ function parseLog(txt) {
 			addCube(i, bt, px, py, pz, mx, my, mz);
 		}
 	}
+
+	// Path
+	{
+		const path = txt.match(/(START[\s\S]*END.*\n)/m)[1]?.match(/.*\n/g) || [];
+		const points = [];
+		let px = 0, py = 0, pz = 0;
+		let vx = 0, vy = 0, vz = 0;
+		for (const p of path) {
+			const d = p.split(/\s/);
+			if (d[0] == "START") {
+				px = parseInt(d[1]);
+				py = parseInt(d[2]);
+				pz = parseInt(d[3]);
+				const q = coord_l2xyz(coord_xyz2l(px, py, pz));
+				points.push(new THREE.Vector3(q.wx, q.wy, q.wz));
+			} else if (d[0] == "VEC") {
+				vx += parseInt(d[1]);
+				vy += parseInt(d[2]);
+				vz += parseInt(d[3]);
+				px += vx;
+				py += vy;
+				pz += vz;
+				const q = coord_l2xyz(coord_xyz2l(px, py, pz));
+				points.push(new THREE.Vector3(q.wx, q.wy, q.wz));
+			} else if (d[0] == "END") {
+				addPath(points);
+			}
+		}
+	}
 }
 
 function init() {
@@ -194,9 +230,6 @@ function init() {
 	controls.screenSpacePanning = false;
 	controls.listenToKeyEvents(window);
 	
-	ship = new THREE.Mesh(new THREE.TetrahedronGeometry(0.05), new THREE.MeshLambertMaterial(0xffff00));
-	scene.add(ship);
-
 	const modes = StereoscopicEffects.effectsListForm();
 	modes.value = defaultEffect;
 	modes.style.position = 'absolute';
@@ -263,6 +296,16 @@ AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 ENDMAP
+START 2 1 2
+VEC 0 1 0
+VEC 1 0 0
+VEC 0 -1 0
+VEC 1 0 0
+VEC -1 1 1
+VEC -1 -1 -1
+VEC -1 0 0
+VEC -1 0 0
+END OK
 `);
 }
 
