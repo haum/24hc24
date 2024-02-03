@@ -84,14 +84,67 @@ function addCube(i, t, px, py, pz, mx, my, mz) {
 	}
 }
 
+const b64_digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+function b64_itoa(number) {
+	let str = '';
+	let nb = Math.floor(number);
+	while (nb > 0) {
+		str = b64_digits.charAt(nb % 64) + str;
+		nb = Math.floor(nb / 64);
+	}
+	return str;
+}
+
+function b64_atoi(str) {
+	let nb = 0;
+	for (const c of str.split('')) nb = (nb * 64) + b64_digits.indexOf(c);
+	return nb;
+}
+
+function block_to_b64(bt, px, py, pz, mx, my, mz) {
+	const nb = (px << 0) +
+		   (mx << 2) +
+		   (py << 4) +
+		   (my << 6) +
+		   (pz << 8) +
+		   (mz << 10) +
+		   (bt << 12);
+	return b64_itoa(nb);
+}
+
 function parseLog(txt) {
-	// Fake
-	gridSize = { x: 10, y: 8, z:5 };
-	addGrid(false);
-	addCube(0, 0, 1, 1, 1, 0, 0, 0);
-	addCube(12, 0, 1, 1, 1, 1, 1, 0);
-	addCube(112, 1, 1, 1, 1, 1, 1, 0);
-	addCube(113, 1, .33, 1, 1, 1, 1, 1);
+	// It is assumed that the log is valid
+
+	// Grid size
+	{
+		const map = txt.match(/MAP[^\n]+\n/)[0]?.split(/\s+/);
+		gridSize = { x: parseInt(map[1]), y: parseInt(map[2]), z: parseInt(map[3]) };
+	}
+
+	// Grid on
+	{
+		const gridon = txt.match(/GRID ON\n/);
+		addGrid(gridon != null);
+	}
+
+	// Decode grid
+	{
+		const ratios = [0, 1/3, 2/3, 1]
+		const grid = txt.match(/MAP.*\n([\s\S]*)ENDMAP/m)[1]?.replaceAll(/[^A-Za-z0-9+\/]+/g, '')?.match(/.{3}/g) || [];
+		for (const [i, v] of grid.entries()) {
+			if (v == 'AAA') continue;
+			const nb = b64_atoi(v);
+			const px = ratios[(nb & (3 << 0)) >> 0];
+			const mx = ratios[(nb & (3 << 2)) >> 2];
+			const py = ratios[(nb & (3 << 4)) >> 4];
+			const my = ratios[(nb & (3 << 6)) >> 6];
+			const pz = ratios[(nb & (3 << 8)) >> 8];
+			const mz = ratios[(nb & (3 << 10)) >> 10];
+			const bt = (nb & (7 << 12)) >> 12;
+			addCube(i, bt, px, py, pz, mx, my, mz);
+		}
+	}
 }
 
 function init() {
@@ -151,7 +204,55 @@ function init() {
 
 	document.body.appendChild(renderer.domElement);
 
-	parseLog('');
+	parseLog(`
+GRID OFF
+MAP 10 8 5
+AMz AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AP/ AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA BP/ B/9 AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+ENDMAP
+`);
 }
 
 let ltime = 0;
