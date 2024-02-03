@@ -5,7 +5,7 @@ import { StereoscopicEffects } from 'threejs-StereoscopicEffects';
 let scene, lights, camera, renderer, controls, stereofx, ship;
 let cube_types = [
 	new THREE.MeshLambertMaterial({ color: 0xd40000 }),
-	new THREE.MeshLambertMaterial({ color: 0xffcc00 }),
+	new THREE.MeshLambertMaterial({ color: 0xffcc00, transparent: true, opacity: 0.2 }),
 ];
 let cubes = [];
 const CUBESZ = 0.1;
@@ -76,6 +76,12 @@ function addCube(i, t, px, py, pz, mx, my, mz) {
 	cube.position.z = p.wz + (sz - mz * CUBESZ)/2;
 	cubes.push(cube);
 	scene.add(cube);
+
+	if (material.transparent) {
+		const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({color: material.color, linewidth: 3}));
+		edges.position.add(cube.position);
+		scene.add(edges);
+	}
 }
 
 function parseLog(txt) {
