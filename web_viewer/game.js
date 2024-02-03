@@ -64,11 +64,16 @@ function addGrid(inside) {
 }
 
 function addCube(i, t, px, py, pz, mx, my, mz) {
-	const cube = new THREE.Mesh(new THREE.BoxGeometry(CUBESZ, CUBESZ, CUBESZ), cube_types[t]);
+	const sx = (px+mx)*CUBESZ/2;
+	const sy = (py+my)*CUBESZ/2;
+	const sz = (pz+mz)*CUBESZ/2;
+	const geometry = new THREE.BoxGeometry(sx, sy, sz);
+	const material = cube_types[t];
+	const cube = new THREE.Mesh(geometry, material);
 	const p = coord_l2xyz(i);
-	cube.position.x = p.wx;
-	cube.position.y = p.wy;
-	cube.position.z = p.wz;
+	cube.position.x = p.wx + (sx - mx * CUBESZ)/2;
+	cube.position.y = p.wy + (sy - my * CUBESZ)/2;
+	cube.position.z = p.wz + (sz - mz * CUBESZ)/2;
 	cubes.push(cube);
 	scene.add(cube);
 }
@@ -77,10 +82,10 @@ function parseLog(txt) {
 	// Fake
 	gridSize = { x: 10, y: 8, z:5 };
 	addGrid(false);
-	addCube(0, 0, 1, 1, 1, 1, 1, 1);
-	addCube(12, 0, 1, 1, 1, 1, 1, 1);
-	addCube(112, 1, 1, 1, 1, 1, 1, 1);
-	addCube(113, 1, 1, 1, 1, 1, 1, 1);
+	addCube(0, 0, 1, 1, 1, 0, 0, 0);
+	addCube(12, 0, 1, 1, 1, 1, 1, 0);
+	addCube(112, 1, 1, 1, 1, 1, 1, 0);
+	addCube(113, 1, .33, 1, 1, 1, 1, 1);
 }
 
 function init() {
