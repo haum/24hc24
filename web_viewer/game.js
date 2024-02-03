@@ -309,18 +309,8 @@ END OK
 `);
 }
 
-let ltime = 0;
 function render(time) {
-	const dt = (time - ltime) / 1000;
-	ltime = time;
-
 	requestAnimationFrame(render);
-
-//	const speed = 0.5;
-//	cube.rotation.x -= dt * speed * 2;
-//	cube.rotation.y -= dt * speed;
-//	cube.rotation.z -= dt * speed * 3;
-
 	controls.update();
 	stereofx.render(scene, camera);
 }
