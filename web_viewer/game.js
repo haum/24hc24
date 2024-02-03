@@ -29,7 +29,7 @@ function coord_xyz2l(x, y, z) {
 	return x + y * gridSize.x + z * gridSize.x * gridSize.y;
 }
 
-function addGrid() {
+function addGrid(inside) {
 	const n = gridSize.x * gridSize.y * gridSize.z;
 	const geometry = new THREE.BufferGeometry();
 
@@ -42,15 +42,18 @@ function addGrid() {
 	const indexPairs = [];
 	for (let i = 0; i < n; i++) {
 		const p = coord_l2xyz(i);
-		if (p.x + 1 < gridSize.x) {
+		const px_minmax = p.x == 0 || p.x == gridSize.x-1;
+		const py_minmax = p.y == 0 || p.y == gridSize.y-1;
+		const pz_minmax = p.z == 0 || p.z == gridSize.z-1;
+		if (p.x + 1 < gridSize.x && (inside || (py_minmax && pz_minmax))) {
 			indexPairs.push(i);
 			indexPairs.push(coord_xyz2l(p.x + 1, p.y, p.z));
 		}
-		if (p.y + 1 < gridSize.y) {
+		if (p.y + 1 < gridSize.y && (inside || (pz_minmax && px_minmax))) {
 			indexPairs.push(i);
 			indexPairs.push(coord_xyz2l(p.x, p.y + 1, p.z));
 		}
-		if (p.z + 1 < gridSize.z) {
+		if (p.z + 1 < gridSize.z && (inside || (px_minmax && py_minmax))) {
 			indexPairs.push(i);
 			indexPairs.push(coord_xyz2l(p.x, p.y, p.z + 1));
 		}
@@ -73,7 +76,7 @@ function addCube(i, t, px, py, pz, mx, my, mz) {
 function parseLog(txt) {
 	// Fake
 	gridSize = { x: 10, y: 8, z:5 };
-	//addGrid();
+	addGrid(false);
 	addCube(0, 0, 1, 1, 1, 1, 1, 1);
 	addCube(12, 0, 1, 1, 1, 1, 1, 1);
 	addCube(112, 1, 1, 1, 1, 1, 1, 1);
