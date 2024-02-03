@@ -64,13 +64,19 @@ function addGrid(inside) {
 }
 
 function addCube(i, t, px, py, pz, mx, my, mz) {
+	const p = coord_l2xyz(i);
+	if (p.x == 0) mx = 0;
+	if (p.y == 0) my = 0;
+	if (p.z == 0) mz = 0;
+	if (p.x == gridSize.x - 1) px = 0;
+	if (p.y == gridSize.y - 1) py = 0;
+	if (p.z == gridSize.z - 1) pz = 0;
 	const sx = (px+mx)*CUBESZ/2;
 	const sy = (py+my)*CUBESZ/2;
 	const sz = (pz+mz)*CUBESZ/2;
 	const geometry = new THREE.BoxGeometry(sx, sy, sz);
 	const material = cube_types[t];
 	const cube = new THREE.Mesh(geometry, material);
-	const p = coord_l2xyz(i);
 	cube.position.x = p.wx + (sx - mx * CUBESZ)/2;
 	cube.position.y = p.wy + (sy - my * CUBESZ)/2;
 	cube.position.z = p.wz + (sz - mz * CUBESZ)/2;
