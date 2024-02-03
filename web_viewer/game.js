@@ -4,8 +4,14 @@ import { StereoscopicEffects } from 'threejs-StereoscopicEffects';
 
 let scene, lights, camera, renderer, controls, stereofx, ship;
 let cube_types = [
-	new THREE.MeshLambertMaterial({ color: 0xd40000 }),
+	new THREE.MeshLambertMaterial({ color: 0x333333, transparent: true, opacity: 0.8 }),
+	new THREE.MeshLambertMaterial({ color: 0x0066d4, transparent: true, opacity: 0.8 }),
 	new THREE.MeshLambertMaterial({ color: 0xffcc00, transparent: true, opacity: 0.2 }),
+	new THREE.MeshLambertMaterial({ color: 0xcccccc, transparent: true, opacity: 0.2 }),
+	new THREE.MeshLambertMaterial({ color: 0xf40000, transparent: true, opacity: 0.1 }),
+	new THREE.MeshLambertMaterial({ color: 0x00f400, transparent: true, opacity: 0.1 }),
+	new THREE.MeshLambertMaterial({ color: 0x0000f4, transparent: true, opacity: 0.1 }),
+	new THREE.MeshLambertMaterial({ color: 0xf400f4, transparent: true, opacity: 0.1 }),
 ];
 let cubes = [];
 const CUBESZ = 0.1;
@@ -59,7 +65,7 @@ function addGrid(inside) {
 		}
 	}
 	geometry.setIndex(indexPairs);
-	const lines = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color: 0x88AA00}));
+	const lines = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color: cube_types[1].color }));
 	scene.add(lines);
 }
 
@@ -83,11 +89,10 @@ function addCube(i, t, px, py, pz, mx, my, mz) {
 	cubes.push(cube);
 	scene.add(cube);
 
-	if (material.transparent) {
-		const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({color: material.color, linewidth: 3}));
-		edges.position.add(cube.position);
-		scene.add(edges);
-	}
+	const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({color: material.color, linewidth: 3}));
+	edges.computeLineDistances();
+	edges.position.add(cube.position);
+	scene.add(edges);
 }
 
 const b64_digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -213,8 +218,8 @@ function init() {
 	parseLog(`
 GRID OFF
 MAP 10 8 5
-AMz AAA AAA AAA AAA AAA AAA AAA AAA AAA
-AAA AAA AP/ AAA AAA AAA AAA AAA AAA AAA
+BMz AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA BP/ AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
@@ -225,7 +230,7 @@ AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
-AAA AAA BP/ B/9 AAA AAA AAA AAA AAA AAA
+AAA AAA CP/ C/9 AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
@@ -234,17 +239,17 @@ AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA EVV FVV GVV HVV AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
-AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
-AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AAA AAA AAA D// AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
-AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+AAA AAA AAA AAA AAA AVV AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
