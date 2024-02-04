@@ -281,6 +281,24 @@ function init() {
 
 	if (document.location.hash)
 		parse_fetch(document.location.hash.substr(1));
+	window.addEventListener("hashchange", e => {
+		parse_fetch(document.location.hash.substr(1));
+	});
+
+	document.ondragover = () => false;
+	document.ondragenter = () => false;
+	document.ondrop = e => {
+		e = e || window.event;
+		e.preventDefault();
+		const file = (e.files || e.dataTransfer.files)[0];
+		const reader = new FileReader();
+		reader.onload = ev => {
+			const data = ev.target.result;
+			parseLog(data);
+		}
+		reader.readAsArrayBuffer(file);
+		return false;
+	};
 }
 
 function render(time) {
