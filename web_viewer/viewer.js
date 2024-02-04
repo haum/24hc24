@@ -223,6 +223,12 @@ function parseLogTxt(txt) {
 				const q = coord_l2xyz(coord_xyz2l(px, py, pz));
 				points.push(new THREE.Vector3(q.wx, q.wy, q.wz));
 			} else if (d[0] == "END") {
+				const l = parseFloat(d[2]);
+				const origin = points[Math.floor(l)];
+				const destination = points[Math.ceil(l)];
+				const ndest = origin.clone().lerp(destination, l%1);
+				points.splice(Math.ceil(l));
+				points.push(ndest);
 				addPath(points);
 			}
 		}
