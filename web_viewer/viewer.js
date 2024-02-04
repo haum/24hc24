@@ -203,7 +203,7 @@ function parseLogTxt(txt) {
 				pz = parseInt(d[3]);
 				const q = coord_l2xyz(coord_xyz2l(px, py, pz));
 				points.push(new THREE.Vector3(q.wx, q.wy, q.wz));
-			} else if (d[0] == "VEC") {
+			} else if (d[0] == "ACC") {
 				vx += parseInt(d[1]);
 				vy += parseInt(d[2]);
 				vz += parseInt(d[3]);
