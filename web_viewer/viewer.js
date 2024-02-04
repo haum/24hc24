@@ -13,7 +13,7 @@ let cube_types = [
 	new THREE.MeshLambertMaterial({ color: 0x0000f4, transparent: true, opacity: 0.1 }),
 	new THREE.MeshLambertMaterial({ color: 0xf400f4, transparent: true, opacity: 0.1 }),
 ];
-let cubes = [];
+let dynobjs = [];
 const CUBESZ = 0.1;
 
 let gridSize = { x: 10, y: 10, z: 10 };
@@ -33,6 +33,13 @@ function coord_l2xyz(i) {
 
 function coord_xyz2l(x, y, z) {
 	return x + y * gridSize.x + z * gridSize.x * gridSize.y;
+}
+
+function rmDynobjs() {
+	for (const obj of dynobjs) {
+		scene.remove(obj);
+	}
+	dynobjs = [];
 }
 
 function addGrid(inside) {
@@ -66,6 +73,7 @@ function addGrid(inside) {
 	}
 	geometry.setIndex(indexPairs);
 	const lines = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color: cube_types[1].color }));
+	dynobjs.push(lines);
 	scene.add(lines);
 }
 
@@ -86,12 +94,13 @@ function addCube(i, t, px, py, pz, mx, my, mz) {
 	cube.position.x = p.wx + (sx - mx * CUBESZ)/2;
 	cube.position.y = p.wy + (sy - my * CUBESZ)/2;
 	cube.position.z = p.wz + (sz - mz * CUBESZ)/2;
-	cubes.push(cube);
+	dynobjs.push(cube);
 	scene.add(cube);
 
 	const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({color: material.color, linewidth: 3}));
 	edges.computeLineDistances();
 	edges.position.add(cube.position);
+	dynobjs.push(edges);
 	scene.add(edges);
 }
 
@@ -99,6 +108,7 @@ function addPath(pts) {
 	const material = new THREE.LineBasicMaterial({ color: 0xffffff });
 	const geometry = new THREE.BufferGeometry().setFromPoints(pts);
 	const line = new THREE.Line(geometry, material);
+	dynobjs.push(line);
 	scene.add(line);
 }
 
@@ -147,6 +157,7 @@ function parseLog(buf) {
 
 function parseLogTxt(txt) {
 	// It is assumed that the log is valid
+	rmDynobjs();
 
 	// Grid size
 	{
