@@ -131,7 +131,21 @@ function block_to_b64(bt, px, py, pz, mx, my, mz) {
 	return b64_itoa(nb);
 }
 
-function parseLog(txt) {
+function parseLog(buf) {
+	const buf8 = new Uint8Array(buf);
+	if (buf8[0] == 31 && buf8[1] == 139) { // Gzip
+		const ds = new DecompressionStream("gzip");
+		const writer = ds.writable.getWriter();
+		writer.write(buf);
+		writer.close();
+		new Response(ds.readable).text().then(t => parseLogTxt(t));
+	} else {
+		const decoder = new TextDecoder();
+		parseLogTxt(decoder.decode(buf));
+	}
+}
+
+function parseLogTxt(txt) {
 	// It is assumed that the log is valid
 
 	// Grid size
@@ -194,12 +208,10 @@ function parseLog(txt) {
 	}
 }
 
-function parse_fetch_gz(url) {
+function parse_fetch(url) {
 	fetch(url)
-		.then(r => r.body)
-		.then(b => b.pipeThrough(new DecompressionStream('gzip')))
-		.then(s => new Response(s).text())
-		.then(t => parseLog(t));
+		.then(r => r.arrayBuffer())
+		.then(b => parseLog(b));
 }
 
 function init() {
@@ -257,7 +269,7 @@ function init() {
 	document.body.appendChild(renderer.domElement);
 
 	if (document.location.hash)
-		parse_fetch_gz(document.location.hash.substr(1));
+		parse_fetch(document.location.hash.substr(1));
 }
 
 function render(time) {
