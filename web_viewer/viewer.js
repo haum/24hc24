@@ -94,6 +94,7 @@ function addCube(i, t, px, py, pz, mx, my, mz) {
 	cube.position.x = p.wx + (sx - mx * CUBESZ)/2;
 	cube.position.y = p.wy + (sy - my * CUBESZ)/2;
 	cube.position.z = p.wz + (sz - mz * CUBESZ)/2;
+	cube.renderOrder = 1;
 	dynobjs.push(cube);
 	scene.add(cube);
 
@@ -105,6 +106,15 @@ function addCube(i, t, px, py, pz, mx, my, mz) {
 }
 
 function addPath(pts) {
+	const sphere_geometry = new THREE.SphereGeometry(CUBESZ/20, 8, 8);
+	const sphere_material = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
+	for (const pt of pts.slice(0, -1)) {
+		const sphere = new THREE.Mesh(sphere_geometry, sphere_material);
+		sphere.position.add(pt);
+		dynobjs.push(sphere);
+		scene.add(sphere);
+	}
+
 	const material = new THREE.LineBasicMaterial({ color: 0xffffff });
 	const geometry = new THREE.BufferGeometry().setFromPoints(pts);
 	const line = new THREE.Line(geometry, material);
