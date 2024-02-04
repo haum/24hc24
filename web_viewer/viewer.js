@@ -256,7 +256,8 @@ function init() {
 
 	document.body.appendChild(renderer.domElement);
 
-	parse_fetch_gz("game1.log.gz");
+	if (document.location.hash)
+		parse_fetch_gz(document.location.hash.substr(1));
 }
 
 function render(time) {
