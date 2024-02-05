@@ -13,11 +13,15 @@
 	"imports": {
 		"three": "https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.module.min.js",
 		"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/",
-		"threejs-StereoscopicEffects": "https://cdn.jsdelivr.net/gh/JackDesBwa/threejs-StereoscopicEffects@1.0.159/src/StereoscopicEffects.min.js"
+		"threejs-StereoscopicEffects": "https://cdn.jsdelivr.net/gh/JackDesBwa/threejs-StereoscopicEffects@1.0.159/src/StereoscopicEffects.min.js",
+		"viewer": "./viewer.js"
 	}
 }
 		</script>
-		<script type="module" src="viewer.js"></script>
+		<script type="module">
+			import { init } from 'viewer'
+			init();
+		</script>
 	</head>
 	<body>
 	</body>

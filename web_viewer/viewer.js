@@ -140,7 +140,7 @@ function b64_atoi(str) {
 	return nb;
 }
 
-function block_to_b64(bt, px, py, pz, mx, my, mz) {
+export function block_to_b64(bt, px, py, pz, mx, my, mz) {
 	const nb = (px << 0) +
 		   (mx << 2) +
 		   (py << 4) +
@@ -151,7 +151,7 @@ function block_to_b64(bt, px, py, pz, mx, my, mz) {
 	return b64_itoa(nb);
 }
 
-function parseLog(buf) {
+export function parseLog(buf) {
 	const buf8 = new Uint8Array(buf);
 	if (buf8[0] == 31 && buf8[1] == 139) { // Gzip
 		const ds = new DecompressionStream("gzip");
@@ -165,7 +165,7 @@ function parseLog(buf) {
 	}
 }
 
-function parseLogTxt(txt) {
+export function parseLogTxt(txt) {
 	// It is assumed that the log is valid
 	rmDynobjs();
 
@@ -235,13 +235,13 @@ function parseLogTxt(txt) {
 	}
 }
 
-function parse_fetch(url) {
+export function parseLogFetch(url) {
 	fetch(url)
 		.then(r => r.arrayBuffer())
 		.then(b => parseLog(b));
 }
 
-function init() {
+export function init() {
 	scene = new THREE.Scene();
 	const defaultEffect = 20; // Anaglyph RC half-colors
 
@@ -296,9 +296,9 @@ function init() {
 	document.body.appendChild(renderer.domElement);
 
 	if (document.location.hash)
-		parse_fetch(document.location.hash.substr(1));
+		parseLogFetch(document.location.hash.substr(1));
 	window.addEventListener("hashchange", e => {
-		parse_fetch(document.location.hash.substr(1));
+		parseLogFetch(document.location.hash.substr(1));
 	});
 
 	document.ondragover = () => false;
@@ -315,6 +315,8 @@ function init() {
 		reader.readAsArrayBuffer(file);
 		return false;
 	};
+
+	render(0);
 }
 
 function render(time) {
@@ -322,6 +324,3 @@ function render(time) {
 	controls.update();
 	stereofx.render(scene, camera);
 }
-
-init();
-render(0);
