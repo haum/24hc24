@@ -17,6 +17,7 @@ let dynobjs = [];
 const CUBESZ = 0.1;
 
 let gridSize = { x: 10, y: 10, z: 10 };
+let path_line = null;
 
 function coord_l2xyz(i) {
 	const z = Math.floor(i / (gridSize.x * gridSize.y));
@@ -98,14 +99,14 @@ function addCube(i, t, px, py, pz, mx, my, mz) {
 	dynobjs.push(cube);
 	scene.add(cube);
 
-	const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({color: material.color, linewidth: 3}));
+	const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({color: material.color}));
 	edges.computeLineDistances();
 	edges.position.add(cube.position);
 	dynobjs.push(edges);
 	scene.add(edges);
 }
 
-function addPath(pts) {
+function addPath(pts, actions) {
 	const sphere_geometry = new THREE.SphereGeometry(CUBESZ/20, 8, 8);
 	const sphere_material = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
 	for (const pt of pts.slice(0, -1)) {
@@ -115,10 +116,53 @@ function addPath(pts) {
 		scene.add(sphere);
 	}
 
-	const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+	const material = new THREE.ShaderMaterial({
+		uniforms: {
+			"t": { value: 0.0 },
+			"maxActions": { value: 1.0 }
+		},
+		vertexShader: `
+			attribute float lineDistance;
+			attribute float actionNb;
+			varying float vLineDistance;
+			varying float vActionNb;
+			void main() {
+				vLineDistance = lineDistance;
+				vActionNb = actionNb;
+				gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+			}
+		`,
+		fragmentShader: `
+			uniform float t;
+			uniform float maxActions;
+			varying float vLineDistance;
+			varying float vActionNb;
+
+			void main() {
+				vec4 color = vec4(vec3(0.5), 1.0);
+				if (mod(vLineDistance - t/1500.0*0.02, 0.02) > 0.01)
+					color = vec4(vec3(0.3), 1.0);
+
+				float b = mod(t/1000.0, maxActions);
+				float a = b - 0.8;
+				if (a < vActionNb && vActionNb < b) {
+					const vec3 chl = vec3(0.1, 1.0, 0.1);
+					float p = (vActionNb - a) / (b-a);
+					color.xyz += p*p*p*p * chl * 0.8;
+				}
+
+				gl_FragColor = color;
+			}
+		`
+	});
+	material.linewidth = 2;
 	const geometry = new THREE.BufferGeometry().setFromPoints(pts);
+	geometry.setAttribute('actionNb', new THREE.Float32BufferAttribute(actions, 1));
 	const line = new THREE.Line(geometry, material);
+	line.computeLineDistances();
+	line.material.uniforms.maxActions.value = actions[actions.length-1];
 	dynobjs.push(line);
+	path_line = line;
 	scene.add(line);
 }
 
@@ -203,6 +247,7 @@ export function parseLogTxt(txt) {
 	{
 		const path = txt.match(/(START[\s\S]*END.*\n)/m)[1]?.match(/.*\n/g) || [];
 		const points = [];
+		const actions = [];
 		let px = 0, py = 0, pz = 0;
 		let vx = 0, vy = 0, vz = 0;
 		for (const p of path) {
@@ -213,6 +258,7 @@ export function parseLogTxt(txt) {
 				pz = parseInt(d[3]);
 				const q = coord_l2xyz(coord_xyz2l(px, py, pz));
 				points.push(new THREE.Vector3(q.wx, q.wy, q.wz));
+				actions.push(0.0);
 			} else if (d[0] == "ACC") {
 				vx += parseInt(d[1]);
 				vy += parseInt(d[2]);
@@ -222,6 +268,7 @@ export function parseLogTxt(txt) {
 				pz += vz;
 				const q = coord_l2xyz(coord_xyz2l(px, py, pz));
 				points.push(new THREE.Vector3(q.wx, q.wy, q.wz));
+				actions.push(actions.length * 1.0);
 			} else if (d[0] == "END") {
 				const l = parseFloat(d[2]);
 				const origin = points[Math.floor(l)];
@@ -229,7 +276,9 @@ export function parseLogTxt(txt) {
 				const ndest = origin.clone().lerp(destination, l%1);
 				points.splice(Math.ceil(l));
 				points.push(ndest);
-				addPath(points);
+				actions.splice(Math.ceil(l));
+				actions.push(l);
+				addPath(points, actions);
 			}
 		}
 	}
@@ -322,5 +371,6 @@ export function init() {
 function render(time) {
 	requestAnimationFrame(render);
 	controls.update();
+	if (path_line) path_line.material.uniforms.t.value = time;
 	stereofx.render(scene, camera);
 }
