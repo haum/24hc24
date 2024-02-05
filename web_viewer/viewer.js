@@ -141,14 +141,14 @@ function b64_atoi(str) {
 }
 
 export function block_to_b64(bt, px, py, pz, mx, my, mz) {
-	const nb = (px << 0) +
-		   (mx << 2) +
-		   (py << 4) +
-		   (my << 6) +
-		   (pz << 8) +
-		   (mz << 10) +
-		   (bt << 12);
-	return b64_itoa(nb);
+	const nb = ((px & 3) << 0) +
+		   ((mx & 3) << 2) +
+		   ((py & 3) << 4) +
+		   ((my & 3) << 6) +
+		   ((pz & 3) << 8) +
+		   ((mz & 3) << 10) +
+		   ((bt & 7) << 12);
+	return ('AAA'+b64_itoa(nb)).substr(-3);
 }
 
 export function parseLog(buf) {

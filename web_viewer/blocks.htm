@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Race viewer</title>
+		<style>
+			html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+			input[type=text], select {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+input[type=submit] {
+  width: 100%;
+  background-color: #4CAF50;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+input[type=submit]:hover {
+  background-color: #45a049;
+}
+
+#form {
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  padding: 20px;
+}
+		</style>
+		<script type="importmap">
+{
+	"imports": {
+		"three": "https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.module.min.js",
+		"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/",
+		"threejs-StereoscopicEffects": "https://cdn.jsdelivr.net/gh/JackDesBwa/threejs-StereoscopicEffects@1.0.159/src/StereoscopicEffects.min.js",
+		"viewer": "./viewer.js"
+	}
+}
+		</script>
+		<script type="module">
+			import { block_to_b64 } from 'viewer'
+			document.getElementsByTagName('form')[0].addEventListener('submit', e => {
+				e.preventDefault();
+				const bt = parseInt(document.getElementById('bt').value);
+				const px = parseInt(document.getElementById('px').value);
+				const py = parseInt(document.getElementById('py').value);
+				const pz = parseInt(document.getElementById('pz').value);
+				const mx = parseInt(document.getElementById('mx').value);
+				const my = parseInt(document.getElementById('my').value);
+				const mz = parseInt(document.getElementById('mz').value);
+				const result = document.getElementById('result');
+				if (((px + mx == 0) || (py + my == 0) || (pz + mz == 0)) && !(bt + px + py + pz + mx + my + mz == 0)) {
+					result.value = 'Invalide';
+				} else {
+					result.value = block_to_b64(bt, px, py, pz, mx, my, mz);
+				}
+			});
+		</script>
+	</head>
+	<body>
+		<div id="form">
+			<form>
+				<label for="bt">Block type</label>
+				<select name="bt" id="bt">
+					<option value="0">Arrivée</option>
+					<option value="1">Obstacle</option>
+					<option value="2">Ralentisseur</option>
+					<option value="3">Accélération nulle</option>
+					<option value="4">Point de passage 1</option>
+					<option value="5">Point de passage 2</option>
+					<option value="6">Point de passage 3</option>
+					<option value="7">Point de passage 4</option>
+				</select>
+				<label for="px">X+</label>
+				<select name="px" id="px">
+					<option value="0">0/3</option>
+					<option value="1">1/3</option>
+					<option value="2">2/3</option>
+					<option value="3">3/3</option>
+				</select>
+				<label for="py">Y+</label>
+				<select name="py" id="py">
+					<option value="0">0/3</option>
+					<option value="1">1/3</option>
+					<option value="2">2/3</option>
+					<option value="3">3/3</option>
+				</select>
+				<label for="pz">Z+</label>
+				<select name="pz" id="pz">
+					<option value="0">0/3</option>
+					<option value="1">1/3</option>
+					<option value="2">2/3</option>
+					<option value="3">3/3</option>
+				</select>
+				<label for="mx">X-</label>
+				<select name="mx" id="mx">
+					<option value="0">0/3</option>
+					<option value="1">1/3</option>
+					<option value="2">2/3</option>
+					<option value="3">3/3</option>
+				</select>
+				<label for="my">Y-</label>
+				<select name="my" id="my">
+					<option value="0">0/3</option>
+					<option value="1">1/3</option>
+					<option value="2">2/3</option>
+					<option value="3">3/3</option>
+				</select>
+				<label for="mz">Z-</label>
+				<select name="mz" id="mz">
+					<option value="0">0/3</option>
+					<option value="1">1/3</option>
+					<option value="2">2/3</option>
+					<option value="3">3/3</option>
+				</select>
+				<input type="submit" value="Forge" />
+				<input type="text" id="result" placeholder="Code généré" />
+			</form>
+		</div>
+	</body>
+</html>
