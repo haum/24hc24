@@ -317,7 +317,7 @@ export function init() {
 	camera.position.set(0, 3, 3);
 	camera.lookAt(scene.position);
 
-	renderer = new THREE.WebGLRenderer({ antialias: true, antialias: true });
+	renderer = new THREE.WebGLRenderer({ antialias: true });
 	renderer.setPixelRatio(window.devicePixelRatio);
 	stereofx = new StereoscopicEffects(renderer, defaultEffect);
 	stereofx.setSize(window.innerWidth, window.innerHeight);
