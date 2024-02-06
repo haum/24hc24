@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
 import { StereoscopicEffects } from 'threejs-StereoscopicEffects';
 
 let scene, background, lights, camera, renderer, controls, stereofx;
@@ -322,12 +322,12 @@ export function init() {
 	stereofx = new StereoscopicEffects(renderer, defaultEffect);
 	stereofx.setSize(window.innerWidth, window.innerHeight);
  
-	controls = new OrbitControls(camera, renderer.domElement);
-	controls.enableDamping = true;
-	controls.dampingFactor = 0.05;
-	controls.screenSpacePanning = false;
-	controls.listenToKeyEvents(window);
-	
+	controls = new TrackballControls(camera, renderer.domElement);
+	controls.rotateSpeed = 1.0;
+	controls.zoomSpeed = 1.0;
+	controls.panSpeed = 0.1;
+	controls.keys = ['CtrlLeft', 'AltLeft', 'ShiftLeft'];
+
 	const modes = StereoscopicEffects.effectsListForm();
 	modes.value = defaultEffect;
 	modes.style.position = 'absolute';
@@ -346,9 +346,11 @@ export function init() {
 		camera.aspect = window.innerWidth / window.innerHeight;
 		camera.updateProjectionMatrix();
 		stereofx.setSize(window.innerWidth, window.innerHeight);
+		controls.handleResize();
 	});
 
 	document.body.appendChild(renderer.domElement);
+	controls.handleResize();
 
 	if (document.location.hash)
 		parseLogFetch(document.location.hash.substr(1));
@@ -377,6 +379,7 @@ export function init() {
 function render(time) {
 	requestAnimationFrame(render);
 	controls.update();
+	camera.up.set(0, 1, 0);
 	if (path_line) path_line.material.uniforms.t.value = time;
 	stereofx.render(scene, camera);
 }
