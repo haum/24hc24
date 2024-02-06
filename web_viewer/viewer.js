@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { StereoscopicEffects } from 'threejs-StereoscopicEffects';
 
-let scene, lights, camera, renderer, controls, stereofx;
+let scene, background, lights, camera, renderer, controls, stereofx;
 let cube_types = [
 	new THREE.MeshLambertMaterial({ color: 0x333333, transparent: true, opacity: 0.8 }),
 	new THREE.MeshLambertMaterial({ color: 0x0066d4, transparent: true, opacity: 0.8 }),
@@ -291,12 +291,14 @@ export function parseLogFetch(url) {
 }
 
 export function init() {
-	scene = new THREE.Scene();
 	const defaultEffect = 20; // Anaglyph RC half-colors
 
+	scene = new THREE.Scene();
+	scene.background = new THREE.Color(0xAAAAAA);
+
 	const loader = new THREE.TextureLoader();
-	scene.background = loader.load('bg.webp');
-	scene.background.colorSpace = THREE.SRGBColorSpace;
+	background = loader.load('bg.webp');
+	background.colorSpace = THREE.SRGBColorSpace;
 
 	lights = [];
 	lights[0] = new THREE.AmbientLight({ intensity: 1 });
@@ -333,6 +335,10 @@ export function init() {
 	modes.style.right = 0;
 	modes.addEventListener('change', () => {
 		stereofx.setEffect(modes.value);
+		if (modes.value > 18)
+			scene.background = new THREE.Color(0xAAAAAA);
+		else
+			scene.background = background;
 	});
 	document.body.appendChild(modes);
 
