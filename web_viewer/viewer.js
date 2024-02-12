@@ -44,37 +44,25 @@ function rmDynobjs() {
 }
 
 function addGrid(inside) {
-	const n = gridSize.x * gridSize.y * gridSize.z;
-	const geometry = new THREE.BufferGeometry();
+	if (inside) {
+		const n = gridSize.x * gridSize.y * gridSize.z;
+		const vertices = [];
+		for (let i = 0; i < n; i++) {
+			const p = coord_l2xyz(i);
+			vertices.push(p.wx, p.wy, p.wz);
+		}
+		const geometry = new THREE.BufferGeometry();
+		geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+		const material = new THREE.PointsMaterial({ color: 0xffffff, size: CUBESZ/10 });
+		const points = new THREE.Points(geometry, material);
+		world.add(points);
+	}
 
-	const positions = [];
-	for (let i = 0; i < n; i++) {
-		const p = coord_l2xyz(i);
-		positions.push(p.wx, p.wy, p.wz);
+	{
+		const geometry = new THREE.BoxGeometry((gridSize.x-1)*CUBESZ, (gridSize.y-1)*CUBESZ, (gridSize.z-1)*CUBESZ);
+		const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({color: cube_types[1].color}));
+		world.add(edges);
 	}
-	geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-	const indexPairs = [];
-	for (let i = 0; i < n; i++) {
-		const p = coord_l2xyz(i);
-		const px_minmax = p.x == 0 || p.x == gridSize.x-1;
-		const py_minmax = p.y == 0 || p.y == gridSize.y-1;
-		const pz_minmax = p.z == 0 || p.z == gridSize.z-1;
-		if (p.x + 1 < gridSize.x && (inside || (py_minmax && pz_minmax))) {
-			indexPairs.push(i);
-			indexPairs.push(coord_xyz2l(p.x + 1, p.y, p.z));
-		}
-		if (p.y + 1 < gridSize.y && (inside || (pz_minmax && px_minmax))) {
-			indexPairs.push(i);
-			indexPairs.push(coord_xyz2l(p.x, p.y + 1, p.z));
-		}
-		if (p.z + 1 < gridSize.z && (inside || (px_minmax && py_minmax))) {
-			indexPairs.push(i);
-			indexPairs.push(coord_xyz2l(p.x, p.y, p.z + 1));
-		}
-	}
-	geometry.setIndex(indexPairs);
-	const lines = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color: cube_types[1].color }));
-	world.add(lines);
 }
 
 function addCube(i, t, px, py, pz, mx, my, mz) {
