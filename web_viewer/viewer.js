@@ -13,7 +13,7 @@ let cube_types = [
 	new THREE.MeshLambertMaterial({ color: 0x0000f4, transparent: true, opacity: 0.1 }),
 	new THREE.MeshLambertMaterial({ color: 0xf400f4, transparent: true, opacity: 0.1 }),
 ];
-let dynobjs = [];
+const world = new THREE.Group();
 const CUBESZ = 0.1;
 
 let gridSize = { x: 10, y: 10, z: 10 };
@@ -37,10 +37,10 @@ function coord_xyz2l(x, y, z) {
 }
 
 function rmDynobjs() {
-	for (const obj of dynobjs) {
-		scene.remove(obj);
+	const children = [...world.children];
+	for (const obj of children) {
+		world.remove(obj);
 	}
-	dynobjs = [];
 }
 
 function addGrid(inside) {
@@ -74,8 +74,7 @@ function addGrid(inside) {
 	}
 	geometry.setIndex(indexPairs);
 	const lines = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color: cube_types[1].color }));
-	dynobjs.push(lines);
-	scene.add(lines);
+	world.add(lines);
 }
 
 function addCube(i, t, px, py, pz, mx, my, mz) {
@@ -96,14 +95,12 @@ function addCube(i, t, px, py, pz, mx, my, mz) {
 	cube.position.y = p.wy + (sy - my * CUBESZ)/2;
 	cube.position.z = p.wz + (sz - mz * CUBESZ)/2;
 	cube.renderOrder = 1;
-	dynobjs.push(cube);
-	scene.add(cube);
+	world.add(cube);
 
 	const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({color: material.color}));
 	edges.computeLineDistances();
 	edges.position.add(cube.position);
-	dynobjs.push(edges);
-	scene.add(edges);
+	world.add(edges);
 }
 
 function addPath(pts, actions) {
@@ -112,8 +109,7 @@ function addPath(pts, actions) {
 	for (const pt of pts.slice(0, -1)) {
 		const sphere = new THREE.Mesh(sphere_geometry, sphere_material);
 		sphere.position.add(pt);
-		dynobjs.push(sphere);
-		scene.add(sphere);
+		world.add(sphere);
 	}
 
 	const material = new THREE.ShaderMaterial({
@@ -161,9 +157,8 @@ function addPath(pts, actions) {
 	const line = new THREE.Line(geometry, material);
 	line.computeLineDistances();
 	line.material.uniforms.maxActions.value = actions[actions.length-1];
-	dynobjs.push(line);
 	path_line = line;
-	scene.add(line);
+	world.add(line);
 }
 
 const b64_digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -295,6 +290,7 @@ export function init() {
 
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color(0xAAAAAA);
+	scene.add(world);
 
 	const loader = new THREE.TextureLoader();
 	background = loader.load('bg.webp');
