@@ -111,6 +111,11 @@ function addPath(pts, actions) {
 		sphere.position.add(pt);
 		world.add(sphere);
 	}
+	if (pts.length == 1) {
+		const sphere = new THREE.Mesh(sphere_geometry, sphere_material);
+		sphere.position.add(pts[0]);
+		world.add(sphere);
+	}
 
 	const material = new THREE.ShaderMaterial({
 		uniforms: {
@@ -240,7 +245,7 @@ export function parseLogTxt(txt) {
 
 	// Path
 	{
-		const path = txt.match(/(START[\s\S]*END.*\n)/m)[1]?.match(/.*\n/g) || [];
+		const path = (txt.match(/(START[\s\S]*END.*\n)/m)?.[1] || txt.match(/(START[\s\S]*\n)/)?.[1])?.match(/.*\n/g) || [];
 		const points = [];
 		const actions = [];
 		let px = 0, py = 0, pz = 0;
@@ -273,9 +278,9 @@ export function parseLogTxt(txt) {
 				points.push(ndest);
 				actions.splice(Math.ceil(l));
 				actions.push(l);
-				addPath(points, actions);
 			}
 		}
+		addPath(points, actions);
 	}
 }
 
