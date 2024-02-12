@@ -26,9 +26,9 @@ function coord_l2xyz(i) {
 	const x = i % gridSize.x
 	return {
 		x: x, y: y, z: z,
-		wx: (x - gridSize.x/2) * CUBESZ,
-		wy: (y - gridSize.y/2) * CUBESZ,
-		wz: (z - gridSize.z/2) * CUBESZ,
+		wx: (x - (gridSize.x - 1)/2) * CUBESZ,
+		wy: (y - (gridSize.y - 1)/2) * CUBESZ,
+		wz: (z - (gridSize.z - 1)/2) * CUBESZ,
 	};
 }
 
