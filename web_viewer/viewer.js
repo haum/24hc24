@@ -3,7 +3,9 @@ import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
 import { StereoscopicEffects } from 'threejs-StereoscopicEffects';
 
 let scene, background, lights, camera, renderer, controls, stereofx;
-let cube_types = [
+const CUBESZ = 0.1;
+const world = new THREE.Group();
+const cube_types = [
 	new THREE.MeshLambertMaterial({ color: 0x333333, transparent: true, opacity: 0.8 }),
 	new THREE.MeshLambertMaterial({ color: 0x0066d4, transparent: true, opacity: 0.8 }),
 	new THREE.MeshLambertMaterial({ color: 0xffcc00, transparent: true, opacity: 0.2 }),
@@ -13,8 +15,16 @@ let cube_types = [
 	new THREE.MeshLambertMaterial({ color: 0x0000f4, transparent: true, opacity: 0.1 }),
 	new THREE.MeshLambertMaterial({ color: 0xf400f4, transparent: true, opacity: 0.1 }),
 ];
-const world = new THREE.Group();
-const CUBESZ = 0.1;
+const line_types = [
+	new THREE.LineBasicMaterial({ color: cube_types[0].color }),
+	new THREE.LineBasicMaterial({ color: cube_types[1].color, transparent: true }),
+	new THREE.LineBasicMaterial({ color: cube_types[2].color }),
+	new THREE.LineBasicMaterial({ color: cube_types[3].color }),
+	new THREE.LineDashedMaterial({ color: cube_types[4].color, dashSize: 1*CUBESZ/50, gapSize: 1*CUBESZ/50}),
+	new THREE.LineDashedMaterial({ color: cube_types[5].color, dashSize: 2*CUBESZ/50, gapSize: 1*CUBESZ/50}),
+	new THREE.LineDashedMaterial({ color: cube_types[6].color, dashSize: 3*CUBESZ/50, gapSize: 1*CUBESZ/50}),
+	new THREE.LineDashedMaterial({ color: cube_types[7].color, dashSize: 4*CUBESZ/50, gapSize: 1*CUBESZ/50})
+];
 
 let gridSize = { x: 10, y: 10, z: 10 };
 let path_line = null;
@@ -77,15 +87,14 @@ function addCube(i, t, px, py, pz, mx, my, mz) {
 	const sy = (py+my)*CUBESZ/2;
 	const sz = (pz+mz)*CUBESZ/2;
 	const geometry = new THREE.BoxGeometry(sx, sy, sz);
-	const material = cube_types[t];
-	const cube = new THREE.Mesh(geometry, material);
+	const cube = new THREE.Mesh(geometry, cube_types[t]);
 	cube.position.x = p.wx + (sx - mx * CUBESZ)/2;
 	cube.position.y = p.wy + (sy - my * CUBESZ)/2;
 	cube.position.z = p.wz + (sz - mz * CUBESZ)/2;
 	cube.renderOrder = 1;
 	world.add(cube);
 
-	const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({color: material.color}));
+	const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), line_types[t]);
 	edges.computeLineDistances();
 	edges.position.add(cube.position);
 	world.add(edges);
