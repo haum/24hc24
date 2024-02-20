@@ -25,6 +25,16 @@ const line_types = [
 	new THREE.LineDashedMaterial({ color: cube_types[6].color, dashSize: 3*CUBESZ/50, gapSize: 1*CUBESZ/50}),
 	new THREE.LineDashedMaterial({ color: cube_types[7].color, dashSize: 4*CUBESZ/50, gapSize: 1*CUBESZ/50})
 ];
+const animations = [
+	null, null,
+	animOpacity(), animOpacity(),
+	null, null,
+	null, null,
+	null, null,
+	null, null,
+	null, null,
+	null, null,
+];
 
 let gridSize = { x: 10, y: 10, z: 10 };
 let path_line = null;
@@ -92,11 +102,13 @@ function addCube(i, t, px, py, pz, mx, my, mz) {
 	cube.position.y = p.wy + (sy - my * CUBESZ)/2;
 	cube.position.z = p.wz + (sz - mz * CUBESZ)/2;
 	cube.renderOrder = 1;
+	cube.animation = animations[2*t];
 	world.add(cube);
 
 	const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), line_types[t]);
 	edges.computeLineDistances();
 	edges.position.add(cube.position);
+	edges.animation = animations[2*t+1];
 	world.add(edges);
 }
 
@@ -287,6 +299,15 @@ export function parseLogFetch(url) {
 		.then(b => parseLog(b));
 }
 
+function animOpacity() {
+	return (obj, t) => {
+		let tt = (t % 3000)/3000;
+		if (tt > 0.5) tt = 1 - tt;
+		tt *= 2;
+		obj.material.opacity = 0.1 + 0.9*tt;
+	}
+}
+
 export function init() {
 	const defaultEffect = 20; // Anaglyph RC half-colors
 
@@ -378,6 +399,7 @@ function render(time) {
 	requestAnimationFrame(render);
 	controls.update();
 	camera.up.set(0, 1, 0);
+	for (const o of world.children) if (o.animation) o.animation(o, time);
 	if (path_line) path_line.material.uniforms.t.value = time;
 	stereofx.render(scene, camera);
 }
