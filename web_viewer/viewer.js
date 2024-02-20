@@ -10,30 +10,30 @@ const cube_types = [
 	new THREE.MeshLambertMaterial({ color: 0x0066d4, transparent: true, opacity: 0.8 }),
 	new THREE.MeshLambertMaterial({ color: 0xffcc00, transparent: true, opacity: 0.2 }),
 	new THREE.MeshLambertMaterial({ color: 0xcccccc, transparent: true, opacity: 0.2 }),
-	new THREE.MeshLambertMaterial({ color: 0xf40000, transparent: true, opacity: 0.1 }),
-	new THREE.MeshLambertMaterial({ color: 0x00f400, transparent: true, opacity: 0.1 }),
-	new THREE.MeshLambertMaterial({ color: 0x0000f4, transparent: true, opacity: 0.1 }),
-	new THREE.MeshLambertMaterial({ color: 0xf400f4, transparent: true, opacity: 0.1 }),
+	new THREE.MeshLambertMaterial({ color: 0x677821, transparent: true, opacity: 0.1 }),
+	new THREE.MeshLambertMaterial({ color: 0x677821, transparent: true, opacity: 0.1 }),
+	new THREE.MeshLambertMaterial({ color: 0x677821, transparent: true, opacity: 0.1 }),
+	new THREE.MeshLambertMaterial({ color: 0x677821, transparent: true, opacity: 0.1 }),
 ];
 const line_types = [
 	new THREE.LineBasicMaterial({ color: cube_types[0].color }),
 	new THREE.LineBasicMaterial({ color: cube_types[1].color, transparent: true }),
 	new THREE.LineBasicMaterial({ color: cube_types[2].color }),
 	new THREE.LineBasicMaterial({ color: cube_types[3].color }),
-	new THREE.LineDashedMaterial({ color: cube_types[4].color, dashSize: 1*CUBESZ/50, gapSize: 1*CUBESZ/50}),
-	new THREE.LineDashedMaterial({ color: cube_types[5].color, dashSize: 2*CUBESZ/50, gapSize: 1*CUBESZ/50}),
-	new THREE.LineDashedMaterial({ color: cube_types[6].color, dashSize: 3*CUBESZ/50, gapSize: 1*CUBESZ/50}),
-	new THREE.LineDashedMaterial({ color: cube_types[7].color, dashSize: 4*CUBESZ/50, gapSize: 1*CUBESZ/50})
+	new THREE.LineDashedMaterial({ color: cube_types[4].color, dashSize: CUBESZ/50, gapSize: CUBESZ/50 }),
+	new THREE.LineDashedMaterial({ color: cube_types[5].color, dashSize: CUBESZ/50, gapSize: CUBESZ/50 }),
+	new THREE.LineDashedMaterial({ color: cube_types[6].color, dashSize: CUBESZ/50, gapSize: CUBESZ/50 }),
+	new THREE.LineDashedMaterial({ color: cube_types[7].color, dashSize: CUBESZ/50, gapSize: CUBESZ/50 })
 ];
 const animations = [
 	null, null,
-	animOpacity(), animOpacity(),
+	animWall(0.1, 0.8, 3), animWall(0, 1, 3),
 	null, null,
 	null, null,
-	null, null,
-	null, null,
-	null, null,
-	null, null,
+	animCheckpoint(1, 5, 0.1, 0.4), null,
+	animCheckpoint(2, 5, 0.1, 0.4), null,
+	animCheckpoint(3, 5, 0.1, 0.4), null,
+	animCheckpoint(4, 5, 0.1, 0.4), null,
 ];
 
 let gridSize = { x: 10, y: 10, z: 10 };
@@ -299,12 +299,21 @@ export function parseLogFetch(url) {
 		.then(b => parseLog(b));
 }
 
-function animOpacity() {
+function animWall(opacityMin, opacityMax, duration) {
 	return (obj, t) => {
-		let tt = (t % 3000)/3000;
+		let tt = (t % (1000*duration))/(1000*duration);
 		if (tt > 0.5) tt = 1 - tt;
 		tt *= 2;
-		obj.material.opacity = 0.1 + 0.9*tt;
+		obj.material.opacity = opacityMin + tt * (opacityMax - opacityMin);
+	}
+}
+
+function animCheckpoint(nr, duration) {
+	return (obj, t) => {
+		let tt = (t % (1000*duration))/(1000*duration);
+		const step = Math.round(tt/0.2);
+		if (step == nr) obj.material.opacity = 0.8;
+		else obj.material.opacity = 0.1;
 	}
 }
 
