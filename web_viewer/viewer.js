@@ -317,11 +317,19 @@ function animCheckpoint(nr, duration) {
 	}
 }
 
+function changeStereomMode(mode) {
+	stereofx.setEffect(mode);
+	if (mode > 18)
+		scene.background = new THREE.Color(0xAAAAAA);
+	else
+		scene.background = background;
+	window.localStorage.setItem("stereoMode", mode);
+}
+
 export function init() {
-	const defaultEffect = 20; // Anaglyph RC half-colors
+	const defaultEffect = window.localStorage.getItem("stereoMode") || 20;
 
 	scene = new THREE.Scene();
-	scene.background = new THREE.Color(0xAAAAAA);
 	scene.add(world);
 
 	const loader = new THREE.TextureLoader();
@@ -347,7 +355,7 @@ export function init() {
 
 	renderer = new THREE.WebGLRenderer({ antialias: true });
 	renderer.setPixelRatio(window.devicePixelRatio);
-	stereofx = new StereoscopicEffects(renderer, defaultEffect);
+	stereofx = new StereoscopicEffects(renderer);
 	stereofx.setSize(window.innerWidth, window.innerHeight);
  
 	controls = new TrackballControls(camera, renderer.domElement);
@@ -361,13 +369,8 @@ export function init() {
 	modes.style.position = 'absolute';
 	modes.style.top = 0;
 	modes.style.right = 0;
-	modes.addEventListener('change', () => {
-		stereofx.setEffect(modes.value);
-		if (modes.value > 18)
-			scene.background = new THREE.Color(0xAAAAAA);
-		else
-			scene.background = background;
-	});
+	modes.addEventListener('change', () => changeStereomMode(modes.value));
+	changeStereomMode(defaultEffect);
 	document.body.appendChild(modes);
 
 	window.addEventListener('resize', () => {
