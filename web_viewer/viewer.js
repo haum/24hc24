@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
 import { StereoscopicEffects } from 'threejs-StereoscopicEffects';
 
-let scene, background, lights, camera, renderer, controls, stereofx;
+let scene, background, lights, camera, renderer, controls, stereofx, modecombo;
 const CUBESZ = 0.1;
 const world = new THREE.Group();
 const cube_types = [
@@ -364,14 +364,18 @@ export function init() {
 	controls.panSpeed = 0.1;
 	controls.keys = ['CtrlLeft', 'AltLeft', 'ShiftLeft'];
 
-	const modes = StereoscopicEffects.effectsListForm();
-	modes.value = defaultEffect;
-	modes.style.position = 'absolute';
-	modes.style.top = 0;
-	modes.style.right = 0;
-	modes.addEventListener('change', () => changeStereomMode(modes.value));
+	modecombo = StereoscopicEffects.effectsListForm();
+	modecombo.value = defaultEffect;
+	modecombo.style.position = 'absolute';
+	modecombo.style.top = 0;
+	modecombo.style.right = 0;
+	modecombo.addEventListener('change', () => changeStereomMode(modecombo.value));
 	changeStereomMode(defaultEffect);
-	document.body.appendChild(modes);
+	document.body.appendChild(modecombo);
+	document.addEventListener('keydown', e => {
+		if (e.keyCode == 77)
+			modecombo.style.display	= (modecombo.style.display == 'none') ? 'block' : 'none';
+	});
 
 	window.addEventListener('resize', () => {
 		camera.aspect = window.innerWidth / window.innerHeight;
