@@ -1,5 +1,8 @@
+WIP
+===
+
 Et si on codait
-===============
+---------------
 
 Sujet à 2 pans:
 - côté joueur
@@ -7,20 +10,20 @@ Sujet à 2 pans:
 
 
 Côté Jeu
-========
+--------
 
 - génère une carte
 - récupère une liste de commandes
 - calcule un score
 
 Côté Joueur
-===========
+-----------
 
 - récupère une carte
 - produit une liste de commandes (pour atteindre une arrivée)
 
 Côté HAUM
-=========
+---------
 
 - serveur + base de données
 - étapes:
@@ -36,18 +39,18 @@ Côté HAUM
    - LOG
 
 Notation
-========
+--------
 
 3 rounds de proposition de cartes + jeu
 - round 1 (18h):
-  - 2 cartes/équipes, coups max=50
+  - 2 cartes/équipes, coups max-50
 - round 2 (1h):
-  - 2 cartes/équipes, coups max=50
-  - 5 cartes/équipes, coups max=100
+  - 2 cartes/équipes, coups max-50
+  - 5 cartes/équipes, coups max-100
 - round 3 (8h):
-  - 2 cartes/équipes, coups max=50
-  - 5 cartes/équipes, coups max=100
-  - 10 cartes/équipes, coups max=150
+  - 2 cartes/équipes, coups max-50
+  - 5 cartes/équipes, coups max-100
+  - 10 cartes/équipes, coups max-150
 tous les joueurs jouent toutes les cartes à tous les rounds
 
 - pénaliser les cartes impossibles
@@ -58,9 +61,9 @@ tous les joueurs jouent toutes les cartes à tous les rounds
 Notation golf:
 
 Joueur:
-   - le plus rapide => 0 points
-   - autres => +1 point/coup supplémentaire
-   - échec => +5+2*points(pire résolvant)
+   - le plus rapide -> 0 points
+   - autres -> +1 point/coup supplémentaire
+   - échec -> +5+2*points(pire résolvant)
 
 Jeu:
    - +1 point/joueur résolvant
@@ -68,14 +71,14 @@ Jeu:
    - map impossible : +nombre de points max si tous les calculs de score incorrects
 
 Infra
-=====
+-----
 
 - docker sur serveur HAUM
 - base de données pour rejouer les matchs sur l'écran
 - uniq token pour repérer joueur/jeu
 
 Protocole
-=========
+---------
 
 All ASCII
 
