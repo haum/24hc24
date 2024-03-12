@@ -355,6 +355,9 @@ export function init() {
 
 	renderer = new THREE.WebGLRenderer({ antialias: true });
 	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.xr.enabled = true;
+	renderer.xr.setReferenceSpaceType('local');
+	renderer.xr.setFramebufferScaleFactor(2);
 	stereofx = new StereoscopicEffects(renderer);
 	stereofx.setSize(window.innerWidth, window.innerHeight);
  
@@ -375,6 +378,63 @@ export function init() {
 	document.addEventListener('keydown', e => {
 		if (e.keyCode == 77)
 			modecombo.style.display	= (modecombo.style.display == 'none') ? 'block' : 'none';
+	});
+
+	const btn_vr = document.createElement('button');
+	if ('xr' in navigator) navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
+		if (!supported) return;
+		btn_vr.innerText = "VR"
+		btn_vr.style.width = '100px';
+		btn_vr.style.height = '40px';
+		btn_vr.style.position = 'absolute';
+		btn_vr.style.top = 0;
+		btn_vr.style.left = 0;
+		btn_vr.addEventListener('click', (e) => {
+			e.stopPropagation();
+			if (!renderer.xr.isPresenting) {
+				navigator.xr.requestSession('immersive-vr').then((s) => {
+					renderer.xr.setSession(s);
+				});
+			} else {
+				renderer.xr.getSession()?.end();
+			}
+		});
+		document.body.appendChild(btn_vr);
+	});
+
+	const btn_ar = document.createElement('button');
+	if ('xr' in navigator) navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
+		if (!supported) return;
+		btn_ar.innerText = "AR"
+		btn_ar.style.width = '100px';
+		btn_ar.style.height = '40px';
+		btn_ar.style.position = 'absolute';
+		btn_ar.style.top = '40px';
+		btn_ar.style.left = 0;
+		btn_ar.addEventListener('click', (e) => {
+			e.stopPropagation();
+			if (!renderer.xr.isPresenting) {
+				navigator.xr.requestSession('immersive-ar').then((s) => {
+					renderer.xr.setSession(s);
+				});
+			} else {
+				renderer.xr.getSession()?.end();
+			}
+		});
+		document.body.appendChild(btn_ar);
+	});
+
+	let xr_prev_bg;
+	renderer.xr.addEventListener('sessionstart', () => {
+		xr_prev_bg = scene.background;
+		scene.background = new THREE.Color(0);
+		btn_vr.innerText = 'Stop';
+		btn_ar.innerText = 'Stop';
+	});
+	renderer.xr.addEventListener('sessionend', () => {
+		scene.background = xr_prev_bg;
+		btn_vr.innerText = 'VR';
+		btn_ar.innerText = 'AR';
 	});
 
 	window.addEventListener('resize', () => {
@@ -408,11 +468,10 @@ export function init() {
 		return false;
 	};
 
-	render(0);
+	renderer.setAnimationLoop(render);
 }
 
 function render(time) {
-	requestAnimationFrame(render);
 	controls.update();
 	camera.up.set(0, 1, 0);
 	for (const o of world.children) if (o.animation) o.animation(o, time);
