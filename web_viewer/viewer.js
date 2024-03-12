@@ -331,6 +331,7 @@ export function init() {
 
 	scene = new THREE.Scene();
 	scene.add(world);
+	world.position.set(0, 0, -1);
 
 	const loader = new THREE.TextureLoader();
 	background = loader.load('bg.webp');
@@ -349,9 +350,9 @@ export function init() {
 	scene.add(lights[2]);
 	scene.add(lights[3]);
 
-	camera = new THREE.PerspectiveCamera(24, window.innerWidth / window.innerHeight, 1/100, 100);
-	camera.position.set(0, 3, 3);
-	camera.lookAt(scene.position);
+	camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1/100, 100);
+	camera.position.set(0, 0, 0);
+	camera.lookAt(world.position);
 
 	renderer = new THREE.WebGLRenderer({ antialias: true });
 	renderer.setPixelRatio(window.devicePixelRatio);
@@ -362,6 +363,7 @@ export function init() {
 	stereofx.setSize(window.innerWidth, window.innerHeight);
  
 	controls = new TrackballControls(camera, renderer.domElement);
+	controls.target = world.position;
 	controls.rotateSpeed = 1.0;
 	controls.zoomSpeed = 1.0;
 	controls.panSpeed = 0.1;
