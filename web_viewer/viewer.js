@@ -6,14 +6,14 @@ let scene, background, lights, camera, renderer, controls, stereofx, modecombo;
 const CUBESZ = 0.1;
 const world = new THREE.Group();
 const cube_types = [
-	new THREE.MeshLambertMaterial({ color: 0x333333, transparent: true, opacity: 0.8 }),
-	new THREE.MeshLambertMaterial({ color: 0x0066d4, transparent: true, opacity: 0.8 }),
-	new THREE.MeshLambertMaterial({ color: 0xffcc00, transparent: true, opacity: 0.2 }),
-	new THREE.MeshLambertMaterial({ color: 0xcccccc, transparent: true, opacity: 0.2 }),
-	new THREE.MeshLambertMaterial({ color: 0x677821, transparent: true, opacity: 0.1 }),
-	new THREE.MeshLambertMaterial({ color: 0x677821, transparent: true, opacity: 0.1 }),
-	new THREE.MeshLambertMaterial({ color: 0x677821, transparent: true, opacity: 0.1 }),
-	new THREE.MeshLambertMaterial({ color: 0x677821, transparent: true, opacity: 0.1 }),
+	new THREE.MeshLambertMaterial({ color: 0x333333, transparent: true, opacity: 0.8 }), // Goals
+	new THREE.MeshLambertMaterial({ color: 0x0066d4, transparent: true, opacity: 0.8 }), // Asteroids
+	new THREE.MeshLambertMaterial({ color: 0xffcc00, transparent: true, opacity: 0.2 }), // Nebulae
+	new THREE.MeshLambertMaterial({ color: 0xcccccc, transparent: true, opacity: 0.2 }), // Magnetic clouds
+	new THREE.MeshLambertMaterial({ color: 0x677821, transparent: true, opacity: 0.1 }), // Checkpoint 1
+	new THREE.MeshLambertMaterial({ color: 0x677821, transparent: true, opacity: 0.1 }), // Checkpoint 2
+	new THREE.MeshLambertMaterial({ color: 0x677821, transparent: true, opacity: 0.1 }), // Checkpoint 3
+	new THREE.MeshLambertMaterial({ color: 0x677821, transparent: true, opacity: 0.1 }), // Checkpoint 4
 ];
 const line_types = [
 	new THREE.LineBasicMaterial({ color: cube_types[0].color }),
