@@ -79,7 +79,7 @@ function addGrid(inside) {
 	}
 
 	{
-		const geometry = new THREE.BoxGeometry((gridSize.x-1)*CUBESZ, (gridSize.y-1)*CUBESZ, (gridSize.z-1)*CUBESZ);
+		const geometry = new THREE.BoxGeometry(gridSize.x*CUBESZ, gridSize.y*CUBESZ, gridSize.z*CUBESZ);
 		const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({color: cube_types[1].color}));
 		world.add(edges);
 	}
@@ -87,12 +87,6 @@ function addGrid(inside) {
 
 function addCube(i, t, px, py, pz, mx, my, mz) {
 	const p = coord_l2xyz(i);
-	if (p.x == 0) mx = 0;
-	if (p.y == 0) my = 0;
-	if (p.z == 0) mz = 0;
-	if (p.x == gridSize.x - 1) px = 0;
-	if (p.y == gridSize.y - 1) py = 0;
-	if (p.z == gridSize.z - 1) pz = 0;
 	const sx = (px+mx)*CUBESZ/2;
 	const sy = (py+my)*CUBESZ/2;
 	const sz = (pz+mz)*CUBESZ/2;
