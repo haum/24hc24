@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import random
-from this import MapIO
+from map import Map
 
 def createBlock():
     bt = random.randint(0,7)
@@ -10,7 +10,7 @@ def createBlock():
     mx = random.randint(1,3)
     my = random.randint(1,3)
     mz = random.randint(1,3)
-    return MapIO.block_to_b64(bt,px,py,pz,mx,my,mz)
+    return Map.block_to_b64(bt,px,py,pz,mx,my,mz)
 
 minx = 5
 miny = 5
