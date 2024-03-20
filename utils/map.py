@@ -10,8 +10,10 @@ class Map:
 
     b64_digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
     mapdesc_pattern = re.compile(r"^\n*MAP (\d+) (\d+) (\d+)\n+([a-zA-Z0-9+/\n\s]+)\n+ENDMAP\n+START (\d+) (\d+) (\d+)\n*$", re.MULTILINE)
+    pathdesc_pattern = re.compile(r"^ACC (-?\d+) (-?\d+) (-?\d+)$")
     BlockType = Enum('BlockType', ['GOAL', 'ASTEROID', 'NEBULA', 'MAGCLOUD', 'CP1', 'CP2', 'CP3', 'CP4'])
     BlockInfo = namedtuple('BlockInfo', 'bt px py pz mx my mz empty'.split())
+    PathAnalysis = namedtuple('PathAnalysis', 'ok moves msg'.split())
 
     @classmethod
     def b64_itoa(cls, n):
@@ -55,6 +57,7 @@ class Map:
 
     def __init__(self, mapdesc):
         m = self.mapdesc_pattern.match(mapdesc)
+        self.maxcp = None
         if m:
             Nx, Ny, Nz, data, Sx, Sy, Sz = m.groups()
             self.Nx, self.Ny, self.Nz, self.Sx, self.Sy, self.Sz = map(int, (Nx, Ny, Nz, Sx, Sy, Sz))
@@ -129,13 +132,100 @@ class Map:
            (cp4 and not cp3):
             return 'Invalid checkpoints'
 
+        if cp4: self.maxcp = 4
+        elif cp3: self.maxcp = 3
+        elif cp2: self.maxcp = 2
+        elif cp1: self.maxcp = 1
+        else: self.maxcp = 0
+
         return None
+
+    def check_path(self, pathdesc):
+        return self.analize_path(pathdesc).ok
+
+    def analize_path(self, pathdesc): # Not complete !!!
+        moves = 0
+        checkpoint = 0
+        victory = False
+        Vx, Vy, Vz = 0, 0, 0
+        Px, Py, Pz = self.Sx, self.Sy, self.Sz
+        for p in filter(None, pathdesc.splitlines()):
+            if victory:
+                return self.PathAnalysis(False, moves, "Moves after destination")
+
+            m = self.pathdesc_pattern.match(p)
+            if not m: return self.PathAnalysis(False, moves, "Invalid line syntax")
+
+            Ax, Ay, Az = map(int, m.groups())
+            if Ax not in (-1, 0, 1) or \
+               Ay not in (-1, 0, 1) or \
+               Az not in (-1, 0, 1):
+                return self.PathAnalysis(False, moves, "Invalid acceleration")
+
+            bs = self[Px, Py, Pz]
+            if bs.bt == self.BlockType.MAGCLOUD:
+                if Ax or Ay or Az:
+                    return self.PathAnalysis(False, moves, "Invalid acceleration in magnetic cloud")
+            if bs.bt == self.BlockType.NEBULA:
+                nVx, nVy, nVz = Vx+Ax, Vy+Ay, Vz+Az
+                if (abs(nVx) > 1 and abs(nVx) >= abs(Vx)) or \
+                   (abs(nVy) > 1 and abs(nVy) >= abs(Vy)) or \
+                   (abs(nVz) > 1 and abs(nVz) >= abs(Vz)):
+                    return self.PathAnalysis(False, moves, "Invalid acceleration in nebula")
+
+            Vx, Vy, Vz = Vx+Ax, Vy+Ay, Vz+Az
+            Px, Py, Pz = Px+Vx, Py+Vy, Pz+Vz
+            moves += 1
+
+            if Px < 0 or Px >= self.Nx or \
+               Py < 0 or Py >= self.Ny or \
+               Pz < 0 or Pz >= self.Nz:
+                   submoves = 0 # TODO
+                   return self.PathAnalysis(False, moves + submoves - 1, "Out of the universe")
+
+            intersections = [(self[Px, Py, Pz], 1)] # TODO Should find intersecting blocks
+            for bc, submoves in intersections:
+                if bc.bt == self.BlockType.ASTEROID:
+                    if not victory:
+                        return self.PathAnalysis(False, moves + submoves - 1, "Collision")
+                elif bc.bt == self.BlockType.GOAL:
+                    if not bc.empty:
+                        if self.maxcp is None:
+                            maxcp = 0
+                            for b in m:
+                                if b.bt == self.BlockType.CP1: maxcp = max(maxcp, 1)
+                                elif b.bt == self.BlockType.CP2: maxcp = max(maxcp, 2)
+                                elif b.bt == self.BlockType.CP3: maxcp = max(maxcp, 3)
+                                elif b.bt == self.BlockType.CP4: maxcp = max(maxcp, 4)
+                            self.maxcp = maxcp
+                        if checkpoint == self.maxcp:
+                            victory = True
+                            moves = moves + submoves - 1
+                elif bc.bt == self.BlockType.CP1:
+                    if checkpoint == 0: checkpoint += 1
+                elif bc.bt == self.BlockType.CP2:
+                    if checkpoint == 1: checkpoint += 1
+                elif bc.bt == self.BlockType.CP3:
+                    if checkpoint == 2: checkpoint += 1
+                elif bc.bt == self.BlockType.CP4:
+                    if checkpoint == 3: checkpoint += 1
+
+        if victory:
+            return self.PathAnalysis(True, moves, "Victory")
+        return self.PathAnalysis(False, moves, "Mission not completed")
+
 
 if __name__ == '__main__':
     import sys
     if len(sys.argv) < 2:
-        print(f"Usage : {sys.argv[0]} <file>")
-    else:
-        with open(sys.argv[1], 'r') as f:
-            m = Map(f.read())
-            print(m.valid, m.find_error())
+        print(f"Usage : {sys.argv[0]} <map_file> [path_file]")
+        exit()
+
+    with open(sys.argv[1], 'r') as f:
+        m = Map(f.read())
+        print(m.valid, m.find_error())
+
+    if len(sys.argv) >=2:
+        with open(sys.argv[2], 'r') as f:
+            p = f.read()
+            print(m.check_path(p), m.analize_path(p))
