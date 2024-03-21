@@ -82,7 +82,19 @@ class Map:
     def valid(self):
         return not self.find_error()
 
-    def find_error(self, max_width = 25): # max_width included
+    def find_error(m, max_width = 25): # max_width included
+        """Analyse the map structure and return an error message if an error is found, None otherwise.
+        The errors are checked in the following order:
+        - Invalid global structure
+        - Invalid dimensions
+        - Invalid start point
+        - Wrong number of blocks
+        - Start in forbidden block
+        - Invalid block
+        - No arrival found
+        - Invalid checkpoints
+        """
+
         if not m.blocks:
             return "Invalid global structure"
 
@@ -101,7 +113,7 @@ class Map:
 
         bs = m.start
         if not bs.empty and \
-           bs.bt in (self.BlockType.GOAL, self.BlockType.ASTEROID) and \
+           bs.bt in (Map.BlockType.GOAL, Map.BlockType.ASTEROID) and \
            bs.px * bs.mx * bs.py * bs.my * bs.pz * bs.mz != 0:
             return "Start in forbidden block"
 
@@ -113,11 +125,11 @@ class Map:
         for b in m:
             if b.empty: continue
 
-            if b.bt == self.BlockType.GOAL: arrival = True
-            elif b.bt == self.BlockType.CP1: cp1 = True
-            elif b.bt == self.BlockType.CP2: cp2 = True
-            elif b.bt == self.BlockType.CP3: cp3 = True
-            elif b.bt == self.BlockType.CP4: cp4 = True
+            if b.bt == Map.BlockType.GOAL: arrival = True
+            elif b.bt == Map.BlockType.CP1: cp1 = True
+            elif b.bt == Map.BlockType.CP2: cp2 = True
+            elif b.bt == Map.BlockType.CP3: cp3 = True
+            elif b.bt == Map.BlockType.CP4: cp4 = True
 
             if (b.px == b.mx and b.mx == 0) or \
                (b.py == b.my and b.my == 0) or \
@@ -132,18 +144,18 @@ class Map:
            (cp4 and not cp3):
             return 'Invalid checkpoints'
 
-        if cp4: self.maxcp = 4
-        elif cp3: self.maxcp = 3
-        elif cp2: self.maxcp = 2
-        elif cp1: self.maxcp = 1
-        else: self.maxcp = 0
+        if cp4: m.maxcp = 4
+        elif cp3: m.maxcp = 3
+        elif cp2: m.maxcp = 2
+        elif cp1: m.maxcp = 1
+        else: m.maxcp = 0
 
         return None
 
     def check_path(self, pathdesc):
-        return self.analize_path(pathdesc).ok
+        return self.analyze_path(pathdesc).ok
 
-    def analize_path(self, pathdesc): # Not complete !!!
+    def analyze_path(self, pathdesc): # Not complete !!!
         moves = 0
         checkpoint = 0
         victory = False
