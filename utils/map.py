@@ -76,13 +76,13 @@ class Map:
 
     @property
     def start(self):
-        return self[m.Sx, m.Sy, m.Sz]
+        return self[self.Sx, self.Sy, self.Sz]
 
     @property
     def valid(self):
         return not self.find_error()
 
-    def find_error(m, max_width = 25): # max_width included
+    def find_error(self, max_width = 25): # max_width included
         """Analyse the map structure and return an error message if an error is found, None otherwise.
         The errors are checked in the following order:
         - Invalid global structure
@@ -95,23 +95,23 @@ class Map:
         - Invalid checkpoints
         """
 
-        if not m.blocks:
+        if not self.blocks:
             return "Invalid global structure"
 
-        if m.Nx < 0 or m.Nx > max_width or \
-           m.Ny < 0 or m.Ny > max_width or \
-           m.Nz < 0 or m.Nz > max_width:
+        if self.Nx < 0 or self.Nx > max_width or \
+           self.Ny < 0 or self.Ny > max_width or \
+           self.Nz < 0 or self.Nz > max_width:
                return "Invalid dimensions"
 
-        if m.Sx < 0 or m.Sx >= m.Nx or \
-           m.Sy < 0 or m.Sy >= m.Ny or \
-           m.Sz < 0 or m.Sz >= m.Nz:
+        if self.Sx < 0 or self.Sx >= self.Nx or \
+           self.Sy < 0 or self.Sy >= self.Ny or \
+           self.Sz < 0 or self.Sz >= self.Nz:
                return "Invalid start point"
 
-        if len(m.blocks) != m.Nx*m.Ny*m.Nz:
+        if len(self.blocks) != self.Nx*self.Ny*self.Nz:
             return 'Wrong number of blocks'
 
-        bs = m.start
+        bs = self.start
         if not bs.empty and \
            bs.bt in (Map.BlockType.GOAL, Map.BlockType.ASTEROID) and \
            bs.px * bs.mx * bs.py * bs.my * bs.pz * bs.mz != 0:
@@ -122,7 +122,7 @@ class Map:
         cp2 = False
         cp3 = False
         cp4 = False
-        for b in m:
+        for b in self:
             if b.empty: continue
 
             if b.bt == Map.BlockType.GOAL: arrival = True
@@ -144,11 +144,11 @@ class Map:
            (cp4 and not cp3):
             return 'Invalid checkpoints'
 
-        if cp4: m.maxcp = 4
-        elif cp3: m.maxcp = 3
-        elif cp2: m.maxcp = 2
-        elif cp1: m.maxcp = 1
-        else: m.maxcp = 0
+        if cp4: self.maxcp = 4
+        elif cp3: self.maxcp = 3
+        elif cp2: self.maxcp = 2
+        elif cp1: self.maxcp = 1
+        else: self.maxcp = 0
 
         return None
 
@@ -217,7 +217,7 @@ class Map:
                     if not bc.empty:
                         if self.maxcp is None:
                             maxcp = 0
-                            for b in m:
+                            for b in self:
                                 if b.bt == self.BlockType.CP1: maxcp = max(maxcp, 1)
                                 elif b.bt == self.BlockType.CP2: maxcp = max(maxcp, 2)
                                 elif b.bt == self.BlockType.CP3: maxcp = max(maxcp, 3)
