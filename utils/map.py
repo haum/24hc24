@@ -240,4 +240,4 @@ if __name__ == '__main__':
     if len(sys.argv) > 2:
         with open(sys.argv[2], 'r') as f:
             p = f.read()
-            print(m.check_path(p), m.analize_path(p))
+            print(m.check_path(p), m.analyze_path(p))
