@@ -247,10 +247,10 @@ if __name__ == '__main__':
         exit()
 
     with open(sys.argv[1], 'r') as f:
-        m = Map(f.read())
-        print(m.valid, m.find_error())
+        the_map = Map(f.read())
+        print(the_map.valid, the_map.find_error())
 
     if len(sys.argv) > 2:
         with open(sys.argv[2], 'r') as f:
-            p = f.read()
-            print(m.check_path(p), m.analyze_path(p))
+            the_path = f.read()
+            print(the_map.check_path(the_path), the_map.analyze_path(the_path))
