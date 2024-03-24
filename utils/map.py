@@ -195,8 +195,21 @@ class Map:
                    submoves = 0 # TODO
                    return self.PathAnalysis(False, moves + submoves - 1, "Out of the universe")
 
-            intersections = [(self[Px, Py, Pz], 1)] # TODO Should find intersecting blocks
-            for bc, submoves in intersections:
+            intersections = []
+            for Vn in (Vx, Vy, Vz):
+                if Vn:
+                    for i in range(6*abs(Vn)+1):
+                        t = 1 - i / abs(Vn) / 6;
+                        Ix, Iy, Iz = Px - t * Vx, Py - t * Vy, Pz - t * Vz
+                        Bx, By, Bz = round(Ix), round(Iy), round(Iz)
+                        b = self[Bx, By, Bz]
+                        if b.empty: continue
+                        if Bx - b.mx/6 <= Ix and Ix <= Bx + b.px/6 and \
+                           By - b.my/6 <= Iy and Iy <= By + b.py/6 and \
+                           Bz - b.mz/6 <= Iz and Iz <= Bz + b.pz/6:
+                               intersections.append((b, (1-t)))
+
+            for bc, submoves in sorted(intersections, key=lambda n: n[1]):
                 if bc.bt == self.BlockType.ASTEROID:
                     if not victory:
                         return self.PathAnalysis(False, moves + submoves - 1, "Collision")
@@ -210,7 +223,7 @@ class Map:
                                 elif b.bt == self.BlockType.CP3: maxcp = max(maxcp, 3)
                                 elif b.bt == self.BlockType.CP4: maxcp = max(maxcp, 4)
                             self.maxcp = maxcp
-                        if checkpoint == self.maxcp:
+                        if checkpoint == self.maxcp and not victory:
                             victory = True
                             moves = moves + submoves - 1
                 elif bc.bt == self.BlockType.CP1:
