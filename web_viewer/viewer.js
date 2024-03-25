@@ -276,6 +276,17 @@ export function parseLogTxt(txt) {
 		if (title) addTitle(title[1]);
 	}
 
+	// Auto load
+	{
+		const autoload = txt.match(/AUTOLOAD (\d+) ([^\n]+)\n/);
+		if (autoload) {
+			const duration = Math.max(1, parseInt(autoload[1])) * 1000;
+			setTimeout(() => {
+				document.location.hash = autoload[2];
+			}, duration);
+		}
+	}
+
 	// Decode grid
 	{
 		const ratios = [0, 1/3, 2/3, 1]
