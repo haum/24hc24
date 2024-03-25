@@ -39,17 +39,21 @@ const animations = [
 let gridSize = { x: 10, y: 10, z: 10 };
 let path_line = null;
 
-function coord_l2xyz(i) {
-	const z = Math.floor(i / (gridSize.x * gridSize.y));
-	i -= z * gridSize.x * gridSize.y;
-	const y = Math.floor(i / gridSize.x);
-	const x = i % gridSize.x
+function coord_xyz_w(x, y, z) {
 	return {
 		x: x, y: y, z: z,
 		wx: (x - (gridSize.x - 1)/2) * CUBESZ,
 		wy: (y - (gridSize.y - 1)/2) * CUBESZ,
 		wz: (z - (gridSize.z - 1)/2) * CUBESZ,
 	};
+}
+
+function coord_l2xyz(i) {
+	const z = Math.floor(i / (gridSize.x * gridSize.y));
+	i -= z * gridSize.x * gridSize.y;
+	const y = Math.floor(i / gridSize.x);
+	const x = i % gridSize.x;
+	return coord_xyz_w(x, y, z);
 }
 
 function coord_xyz2l(x, y, z) {
@@ -259,7 +263,7 @@ export function parseLogTxt(txt) {
 				px = parseInt(d[1]);
 				py = parseInt(d[2]);
 				pz = parseInt(d[3]);
-				const q = coord_l2xyz(coord_xyz2l(px, py, pz));
+				const q = coord_xyz_w(px, py, pz);
 				points.push(new THREE.Vector3(q.wx, q.wy, q.wz));
 				actions.push(0.0);
 			} else if (d[0] == "ACC") {
@@ -269,7 +273,7 @@ export function parseLogTxt(txt) {
 				px += vx;
 				py += vy;
 				pz += vz;
-				const q = coord_l2xyz(coord_xyz2l(px, py, pz));
+				const q = coord_xyz_w(px, py, pz);
 				points.push(new THREE.Vector3(q.wx, q.wy, q.wz));
 				actions.push(actions.length * 1.0);
 			} else if (d[0] == "END") {
