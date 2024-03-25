@@ -3,7 +3,7 @@ import { StereoscopicEffects } from 'threejs-StereoscopicEffects';
 import { ViewerControls } from './controller.js';
 
 let scene, background, lights, camera, renderer, controls, stereofx, modecombo;
-const CUBESZ = 0.1;
+let CUBESZ = 0.1;
 const world = new THREE.Group();
 const cube_types = [
 	new THREE.MeshLambertMaterial({ color: 0x333333, transparent: true, opacity: 0.8 }), // Goals
@@ -261,6 +261,7 @@ export function parseLogTxt(txt) {
 	{
 		const map = txt.match(/MAP[^\n]+\n/)[0]?.split(/\s+/);
 		gridSize = { x: parseInt(map[1]), y: parseInt(map[2]), z: parseInt(map[3]) };
+		CUBESZ = 1 / Math.max(gridSize.x, gridSize.y, gridSize.z);
 	}
 
 	// Grid on
