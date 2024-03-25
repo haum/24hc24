@@ -417,6 +417,9 @@ export function init() {
  
 	controls = new ViewerControls(camera, world, renderer.domElement);
 
+	const overlay = document.createElement('div');
+	document.body.appendChild(overlay);
+
 	modecombo = StereoscopicEffects.effectsListForm();
 	modecombo.value = defaultEffect;
 	modecombo.style.position = 'absolute';
@@ -424,10 +427,10 @@ export function init() {
 	modecombo.style.right = 0;
 	modecombo.addEventListener('change', () => changeStereomMode(modecombo.value));
 	changeStereomMode(defaultEffect);
-	document.body.appendChild(modecombo);
+	overlay.appendChild(modecombo);
 	document.addEventListener('keydown', e => {
 		if (e.keyCode == 77)
-			modecombo.style.display	= (modecombo.style.display == 'none') ? 'block' : 'none';
+			overlay.style.display = (overlay.style.display == 'none') ? 'block' : 'none';
 	});
 
 	const btn_vr = document.createElement('button');
@@ -449,7 +452,7 @@ export function init() {
 				renderer.xr.getSession()?.end();
 			}
 		});
-		document.body.appendChild(btn_vr);
+		overlay.appendChild(btn_vr);
 	});
 
 	const btn_ar = document.createElement('button');
@@ -471,7 +474,7 @@ export function init() {
 				renderer.xr.getSession()?.end();
 			}
 		});
-		document.body.appendChild(btn_ar);
+		overlay.appendChild(btn_ar);
 	});
 
 	let xr_prev_bg;
