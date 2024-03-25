@@ -13,6 +13,7 @@ class Map:
     pathdesc_pattern = re.compile(r"^ACC (-?\d+) (-?\d+) (-?\d+)$")
     BlockType = Enum('BlockType', ['GOAL', 'ASTEROID', 'NEBULA', 'MAGCLOUD', 'CP1', 'CP2', 'CP3', 'CP4'])
     BlockInfo = namedtuple('BlockInfo', 'bt px py pz mx my mz empty'.split())
+    State = namedtuple('State', 'Px Py Pz Vx Vy Vz checkpoint'.split())
     PathAnalysis = namedtuple('PathAnalysis', 'ok moves msg'.split())
 
     @classmethod
@@ -173,6 +174,7 @@ class Map:
         victory = False
         Vx, Vy, Vz = 0, 0, 0
         Px, Py, Pz = self.Sx, self.Sy, self.Sz
+
         for p in filter(None, pathdesc.splitlines()):
             if victory:
                 return self.PathAnalysis(False, moves, "Moves after destination")
@@ -181,73 +183,88 @@ class Map:
             if not m: return self.PathAnalysis(False, moves, "Invalid line syntax")
 
             Ax, Ay, Az = map(int, m.groups())
-            if Ax not in (-1, 0, 1) or \
-               Ay not in (-1, 0, 1) or \
-               Az not in (-1, 0, 1):
-                return self.PathAnalysis(False, moves, "Invalid acceleration")
+            state = Map.State(Px, Py, Pz, Vx, Vy, Vz, checkpoint)
+            result = self.analyze_path_step(state, Ax, Ay, Az)
 
-            bs = self[Px, Py, Pz]
-            if bs.bt == self.BlockType.MAGCLOUD:
-                if Ax or Ay or Az:
-                    return self.PathAnalysis(False, moves, "Invalid acceleration in magnetic cloud")
-            if bs.bt == self.BlockType.NEBULA:
-                nVx, nVy, nVz = Vx+Ax, Vy+Ay, Vz+Az
-                if (abs(nVx) > 1 and abs(nVx) >= abs(Vx)) or \
-                   (abs(nVy) > 1 and abs(nVy) >= abs(Vy)) or \
-                   (abs(nVz) > 1 and abs(nVz) >= abs(Vz)):
-                    return self.PathAnalysis(False, moves, "Invalid acceleration in nebula")
-
-            Vx, Vy, Vz = Vx+Ax, Vy+Ay, Vz+Az
-            Px, Py, Pz = Px+Vx, Py+Vy, Pz+Vz
-            moves += 1
-
-            out_of_universe = False
-            submoves = 1
-            for Vn, Pn, Nn in ((Vx, Px, self.Nx), (Vy, Py, self.Ny), (Vz, Pz, self.Nz)):
-                if Pn < 0:
-                    submoves = min(submoves, (Vn - Pn - 0.5) / Vn)
-                    out_of_universe = True
-                elif Pn >= Nn:
-                    submoves = min(submoves, (Vn - Pn - 0.5 + Nn) / Vn)
-                    out_of_universe = True
-            if out_of_universe:
-                return self.PathAnalysis(False, moves + submoves - 1, "Out of the universe")
-
-            intersections = []
-            for Vn in (Vx, Vy, Vz):
-                if Vn:
-                    for i in range(6*abs(Vn)+1):
-                        t = 1 - i / abs(Vn) / 6;
-                        Ix, Iy, Iz = Px - t * Vx, Py - t * Vy, Pz - t * Vz
-                        Bx, By, Bz = round(Ix), round(Iy), round(Iz)
-                        b = self[Bx, By, Bz]
-                        if b.empty: continue
-                        if Bx - b.mx/6 <= Ix and Ix <= Bx + b.px/6 and \
-                           By - b.my/6 <= Iy and Iy <= By + b.py/6 and \
-                           Bz - b.mz/6 <= Iz and Iz <= Bz + b.pz/6:
-                               intersections.append((b, (1-t)))
-
-            for bc, submoves in sorted(intersections, key=lambda n: n[1]):
-                if bc.bt == self.BlockType.ASTEROID:
-                    if not victory:
-                        return self.PathAnalysis(False, moves + submoves - 1, "Collision")
-                elif bc.bt == self.BlockType.GOAL:
-                    if not bc.empty:
-                        if checkpoint == self.maxcp and not victory:
-                            victory = True
-                            moves = moves + submoves - 1
-                elif bc.bt == self.BlockType.CP1:
-                    if checkpoint == 0: checkpoint += 1
-                elif bc.bt == self.BlockType.CP2:
-                    if checkpoint == 1: checkpoint += 1
-                elif bc.bt == self.BlockType.CP3:
-                    if checkpoint == 2: checkpoint += 1
-                elif bc.bt == self.BlockType.CP4:
-                    if checkpoint == 3: checkpoint += 1
+            if isinstance(result, Map.State):
+                Px, Py, Pz, Vx, Vy, Vz, checkpoint = result
+                moves += 1
+            else:
+                ok, submoves, msg = result
+                if ok:
+                    victory = True
+                    moves += submoves
+                else:
+                    return Map.PathAnalysis(ok, moves + submoves, msg)
 
         if victory:
             return self.PathAnalysis(True, moves, "Victory")
         return self.PathAnalysis(False, moves, "Mission not completed")
+
+    def analyze_path_step(self, state, Ax, Ay, Az):
+        if Ax not in (-1, 0, 1) or \
+           Ay not in (-1, 0, 1) or \
+           Az not in (-1, 0, 1):
+            return self.PathAnalysis(False, 0, "Invalid acceleration")
+
+        Px, Py, Pz, Vx, Vy, Vz, checkpoint = state
+
+        bs = self[Px, Py, Pz]
+        if bs.bt == self.BlockType.MAGCLOUD:
+            if Ax or Ay or Az:
+                return self.PathAnalysis(False, 0, "Invalid acceleration in magnetic cloud")
+        elif bs.bt == self.BlockType.NEBULA:
+            nVx, nVy, nVz = Vx+Ax, Vy+Ay, Vz+Az
+            if (abs(nVx) > 1 and abs(nVx) >= abs(Vx)) or \
+               (abs(nVy) > 1 and abs(nVy) >= abs(Vy)) or \
+               (abs(nVz) > 1 and abs(nVz) >= abs(Vz)):
+                return self.PathAnalysis(False, 0, "Invalid acceleration in nebula")
+
+        Vx, Vy, Vz = Vx+Ax, Vy+Ay, Vz+Az
+        Px, Py, Pz = Px+Vx, Py+Vy, Pz+Vz
+
+        out_of_universe = False
+        submoves = 1
+        for Vn, Pn, Nn in ((Vx, Px, self.Nx), (Vy, Py, self.Ny), (Vz, Pz, self.Nz)):
+            if Pn < 0:
+                submoves = min(submoves, (Vn - Pn - 0.5) / Vn)
+                out_of_universe = True
+            elif Pn >= Nn:
+                submoves = min(submoves, (Vn - Pn - 0.5 + Nn) / Vn)
+                out_of_universe = True
+        if out_of_universe:
+            return self.PathAnalysis(False, submoves, "Out of the universe")
+
+        intersections = []
+        for Vn in (Vx, Vy, Vz):
+            if Vn:
+                for i in range(6*abs(Vn)+1):
+                    t = 1 - i / abs(Vn) / 6;
+                    Ix, Iy, Iz = Px - t * Vx, Py - t * Vy, Pz - t * Vz
+                    Bx, By, Bz = round(Ix), round(Iy), round(Iz)
+                    b = self[Bx, By, Bz]
+                    if b.empty: continue
+                    if Bx - b.mx/6 <= Ix and Ix <= Bx + b.px/6 and \
+                       By - b.my/6 <= Iy and Iy <= By + b.py/6 and \
+                       Bz - b.mz/6 <= Iz and Iz <= Bz + b.pz/6:
+                           intersections.append((b, (1-t)))
+
+        for bc, submoves in sorted(intersections, key=lambda n: n[1]):
+            if bc.bt == self.BlockType.GOAL:
+                if not bc.empty:
+                    if checkpoint == self.maxcp:
+                        return self.PathAnalysis(True, submoves, "Victory")
+            elif bc.bt == self.BlockType.ASTEROID:
+                return self.PathAnalysis(False, submoves, "Collision")
+            elif bc.bt == self.BlockType.CP1:
+                if checkpoint == 0: checkpoint += 1
+            elif bc.bt == self.BlockType.CP2:
+                if checkpoint == 1: checkpoint += 1
+            elif bc.bt == self.BlockType.CP3:
+                if checkpoint == 2: checkpoint += 1
+            elif bc.bt == self.BlockType.CP4:
+                if checkpoint == 3: checkpoint += 1
+        return Map.State(Px, Py, Pz, Vx, Vy, Vz, checkpoint)
 
 
 if __name__ == '__main__':
