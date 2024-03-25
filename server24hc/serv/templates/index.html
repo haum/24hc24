@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+ <table id=leaderboard>
+  <tr>
+    <th></th>
+    <th>Parties jouées</th>
+    <th>Score "Joueur"</th>
+    <th>Score "Jeu"</th>
+    <th>Score Général</th>
+  </tr>
+{% for t in teams %}
+  <tr>
+    <td><a href=''>{{t.user.username}}</a></td>
+    <td>{{t.games_played}}</td>
+    <td>{{t.score_player}}</td>
+    <td>{{t.score_game}}</td>
+    <td>{{t.score_full}}</td>
+  </tr>
+{% empty %}
+<tr>No teams...</tr>
+{% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,58 @@
+/*
+ * style.css
+ *
+ * Copyright (C) 2024 Mathieu Gaborit (matael) <mathieu@matael.org>
+ *
+ * Licensed under the "THE BEER-WARE LICENSE" (Revision 42):
+ * Mathieu (matael) Gaborit wrote this file. As long as you retain this notice you
+ * can do whatever you want with this stuff. If we meet some day, and you think
+ * this stuff is worth it, you can buy me a beer or coffee in return
+ *
+ */
+
+body {
+	background: white;
+	color: black;
+	font-family: Arial, sans-serif;
+	width: 1000px;
+	margin: 0 auto;
+	background-image: url("/static/viewer/bg.webp");
+	background-size: cover;
+	background-attachment: fixed;
+	color: white;
+
+}
+
+header h1 {
+	font-size: 3em;
+	text-align: center;
+}
+
+#leaderboard {
+	width: 100%;
+}
+
+#leaderboard a {
+	color: white;
+	display: block;
+}
+
+#leaderboard td, #leaderboard th {
+	text-align: center;
+}
+#leaderboard tr  td:first-child {
+		text-align: left;
+}
+
+footer {
+	width: 1000px;
+	font-size: 0.9em;
+	height: 2em;
+	text-align: center;
+	position: absolute;
+	bottom: 0;
+}
+
+
+
+
