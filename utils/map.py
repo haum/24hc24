@@ -155,7 +155,7 @@ class Map:
     def check_path(self, pathdesc):
         return self.analyze_path(pathdesc).ok
 
-    def analyze_path(self, pathdesc): # Not complete !!!
+    def analyze_path(self, pathdesc):
         moves = 0
         checkpoint = 0
         victory = False
@@ -189,11 +189,17 @@ class Map:
             Px, Py, Pz = Px+Vx, Py+Vy, Pz+Vz
             moves += 1
 
-            if Px < 0 or Px >= self.Nx or \
-               Py < 0 or Py >= self.Ny or \
-               Pz < 0 or Pz >= self.Nz:
-                   submoves = 0 # TODO
-                   return self.PathAnalysis(False, moves + submoves - 1, "Out of the universe")
+            out_of_universe = False
+            submoves = 1
+            for Vn, Pn, Nn in ((Vx, Px, self.Nx), (Vy, Py, self.Ny), (Vz, Pz, self.Nz)):
+                if Pn < 0:
+                    submoves = min(submoves, (Vn - Pn - 0.5) / Vn)
+                    out_of_universe = True
+                elif Pn >= Nn:
+                    submoves = min(submoves, (Vn - Pn - 0.5 + Nn) / Vn)
+                    out_of_universe = True
+            if out_of_universe:
+                return self.PathAnalysis(False, moves + submoves - 1, "Out of the universe")
 
             intersections = []
             for Vn in (Vx, Vy, Vz):
