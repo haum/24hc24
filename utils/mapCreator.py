@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import random
+import argparse
 from map import Map
 
 def createBlock():
@@ -12,23 +13,23 @@ def createBlock():
     mz = random.randint(1,3)
     return Map.block_to_b64(bt,px,py,pz,mx,my,mz)
 
-minx = 5
-miny = 5
-minz = 1
+parser = argparse.ArgumentParser()
+parser.add_argument('--minx', '-x', type=int, default=1)
+parser.add_argument('--miny', '-y', type=int, default=1)
+parser.add_argument('--minz', '-z', type=int, default=1)
+parser.add_argument('--maxx', '-X', type=int, default=25)
+parser.add_argument('--maxy', '-Y', type=int, default=25)
+parser.add_argument('--maxz', '-Z', type=int, default=25)
+parser.add_argument('--randomness', '-r', type=int, default=20)
+args = parser.parse_args()
 
-maxx = 5 
-maxy = 5
-maxz = 1
-
-boxmaxx = random.randint(minx, maxx)
-boxmaxy = random.randint(miny, maxy)
-boxmaxz = random.randint(minz, maxz)
+boxmaxx = random.randint(args.minx, args.maxx)
+boxmaxy = random.randint(args.miny, args.maxy)
+boxmaxz = random.randint(args.minz, args.maxz)
 
 startx = random.randint(0, boxmaxx-1)
 starty = random.randint(0, boxmaxy-1)
 startz = random.randint(0, boxmaxz-1)
-
-maxRandom4Block = 15
 
 #print("On construit une map de dimension {},{},{} !".format(boxmaxx,boxmaxy,boxmaxz))
 
@@ -38,7 +39,7 @@ for z in range(boxmaxz):
         print("")
     for y in range(boxmaxy):
         for x in range(boxmaxx):
-            randomBlock = random.randint(0,maxRandom4Block)
+            randomBlock = random.randint(0, args.randomness)
             if randomBlock == 2:
                 block = createBlock()
             else:
