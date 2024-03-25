@@ -57,7 +57,7 @@ class Map:
 
     def __init__(self, mapdesc):
         m = self.mapdesc_pattern.match(mapdesc)
-        self.maxcp = None
+        self.maxcp_cache = None
         if m:
             Nx, Ny, Nz, data, Sx, Sy, Sz = m.groups()
             self.Nx, self.Ny, self.Nz, self.Sx, self.Sy, self.Sz = map(int, (Nx, Ny, Nz, Sx, Sy, Sz))
@@ -77,6 +77,18 @@ class Map:
     @property
     def start(self):
         return self[self.Sx, self.Sy, self.Sz]
+
+    @property
+    def maxcp(self):
+        if self.maxcp_cache is None:
+            maxcp = 0
+            for b in self:
+                if b.bt == self.BlockType.CP1: maxcp = max(maxcp, 1)
+                elif b.bt == self.BlockType.CP2: maxcp = max(maxcp, 2)
+                elif b.bt == self.BlockType.CP3: maxcp = max(maxcp, 3)
+                elif b.bt == self.BlockType.CP4: maxcp = max(maxcp, 4)
+            self.maxcp_cache = maxcp
+        return self.maxcp_cache
 
     @property
     def valid(self):
@@ -144,11 +156,11 @@ class Map:
            (cp4 and not cp3):
             return 'Invalid checkpoints'
 
-        if cp4: self.maxcp = 4
-        elif cp3: self.maxcp = 3
-        elif cp2: self.maxcp = 2
-        elif cp1: self.maxcp = 1
-        else: self.maxcp = 0
+        if cp4: self.maxcp_cache = 4
+        elif cp3: self.maxcp_cache = 3
+        elif cp2: self.maxcp_cache = 2
+        elif cp1: self.maxcp_cache = 1
+        else: self.maxcp_cache = 0
 
         return None
 
@@ -221,14 +233,6 @@ class Map:
                         return self.PathAnalysis(False, moves + submoves - 1, "Collision")
                 elif bc.bt == self.BlockType.GOAL:
                     if not bc.empty:
-                        if self.maxcp is None:
-                            maxcp = 0
-                            for b in self:
-                                if b.bt == self.BlockType.CP1: maxcp = max(maxcp, 1)
-                                elif b.bt == self.BlockType.CP2: maxcp = max(maxcp, 2)
-                                elif b.bt == self.BlockType.CP3: maxcp = max(maxcp, 3)
-                                elif b.bt == self.BlockType.CP4: maxcp = max(maxcp, 4)
-                            self.maxcp = maxcp
                         if checkpoint == self.maxcp and not victory:
                             victory = True
                             moves = moves + submoves - 1
