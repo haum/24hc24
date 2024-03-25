@@ -89,6 +89,43 @@ function addGrid(inside) {
 	}
 }
 
+const titleCanvas = document.createElement('canvas');
+function addTitle(text) {
+	titleCanvas.height = 64;
+	const ctx = titleCanvas.getContext('2d');
+	const font = '48px monospace';
+
+	ctx.font = font;
+	titleCanvas.width = Math.ceil(ctx.measureText(text).width + 32);
+
+	ctx.font = font;
+	ctx.rect(0, 0, titleCanvas.width, titleCanvas.height);
+	ctx.fillStyle = '#0066d4';
+	ctx.fill();
+
+	ctx.fillStyle = '#fff';
+	ctx.fillText(text, 16, 48);
+
+	const texture = new THREE.Texture(ctx.getImageData(0, 0, titleCanvas.width, titleCanvas.height));
+	texture.colorSpace = THREE.SRGBColorSpace;
+	texture.needsUpdate = true;
+	const geometry = new THREE.PlaneGeometry(titleCanvas.width/2000, titleCanvas.height/2000);
+	const material = new THREE.MeshBasicMaterial( { map: texture } );
+	const mesh = new THREE.Mesh(geometry, material);
+
+	mesh.minFilter = THREE.LinearFilter;
+	mesh.generateMipmaps = false;
+	mesh.needsUpdate = true;
+
+	const cc = coord_xyz_w(0, 0, 0)
+	mesh.position.set(
+		cc.wx - CUBESZ/2 + geometry.parameters.width/2,
+		cc.wy - CUBESZ/2 - geometry.parameters.height/2,
+		cc.wz - CUBESZ/2
+	);
+	world.add(mesh);
+}
+
 function addCube(i, t, px, py, pz, mx, my, mz) {
 	const p = coord_l2xyz(i);
 	const sx = (px+mx)*CUBESZ/2;
@@ -230,6 +267,12 @@ export function parseLogTxt(txt) {
 	{
 		const gridon = txt.match(/GRID ON\n/);
 		addGrid(gridon != null);
+	}
+
+	// Title
+	{
+		const title = txt.match(/TITLE ([^\n]+)\n/);
+		if (title) addTitle(title[1]);
 	}
 
 	// Decode grid
