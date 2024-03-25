@@ -273,7 +273,7 @@ export function parseLogTxt(txt) {
 				points.push(new THREE.Vector3(q.wx, q.wy, q.wz));
 				actions.push(actions.length * 1.0);
 			} else if (d[0] == "END") {
-				const l = parseFloat(d[2]);
+				const l = Math.min(parseFloat(d[2]), points.length-1);
 				const origin = points[Math.floor(l)];
 				const destination = points[Math.ceil(l)];
 				const ndest = origin.clone().lerp(destination, l%1);
