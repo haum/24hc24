@@ -69,6 +69,10 @@ class Map:
 
     def __getitem__(self, t):
         x, y, z = t
+        if x < 0 or x >= self.Nx or \
+           y < 0 or y >= self.Ny or \
+           z < 0 or z >= self.Nz:
+               return Map.BlockInfo(Map.BlockType.ASTEROID, 3, 3, 3, 3, 3, 3, False)
         return self.decode_block(self.blocks[x + y * self.Nx + z * self.Nx * self.Ny])
 
     def __iter__(self):
