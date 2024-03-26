@@ -40,6 +40,47 @@ let gridSize = { x: 10, y: 10, z: 10 };
 let path_line = null;
 let playable_url = null;
 
+const line_material = new THREE.ShaderMaterial({
+	uniforms: {
+		"t": { value: 0.0 },
+		"maxActions": { value: 1.0 }
+	},
+	linewidth: 3,
+	vertexShader: `
+		attribute float lineDistance;
+		attribute float actionNb;
+		varying float vLineDistance;
+		varying float vActionNb;
+		void main() {
+			vLineDistance = lineDistance;
+			vActionNb = actionNb;
+			gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+		}
+	`,
+	fragmentShader: `
+		uniform float t;
+		uniform float maxActions;
+		varying float vLineDistance;
+		varying float vActionNb;
+
+		void main() {
+			vec4 color = vec4(vec3(0.5), 1.0);
+			if (mod(vLineDistance - t/1500.0*0.02, 0.02) > 0.01)
+				color = vec4(vec3(0.3), 1.0);
+
+			float b = mod(t/1000.0, maxActions);
+			float a = b - 0.8;
+			if (a < vActionNb && vActionNb < b) {
+				const vec3 chl = vec3(0.1, 1.0, 0.1);
+				float p = (vActionNb - a) / (b-a);
+				color.xyz += p*p*p*p * chl * 0.8;
+			}
+
+			gl_FragColor = color;
+		}
+	`
+});
+
 function coord_xyz_w(x, y, z) {
 	return {
 		x: x, y: y, z: z,
@@ -162,49 +203,9 @@ function addPath(pts, actions) {
 		world.add(sphere);
 	}
 
-	const material = new THREE.ShaderMaterial({
-		uniforms: {
-			"t": { value: 0.0 },
-			"maxActions": { value: 1.0 }
-		},
-		vertexShader: `
-			attribute float lineDistance;
-			attribute float actionNb;
-			varying float vLineDistance;
-			varying float vActionNb;
-			void main() {
-				vLineDistance = lineDistance;
-				vActionNb = actionNb;
-				gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-			}
-		`,
-		fragmentShader: `
-			uniform float t;
-			uniform float maxActions;
-			varying float vLineDistance;
-			varying float vActionNb;
-
-			void main() {
-				vec4 color = vec4(vec3(0.5), 1.0);
-				if (mod(vLineDistance - t/1500.0*0.02, 0.02) > 0.01)
-					color = vec4(vec3(0.3), 1.0);
-
-				float b = mod(t/1000.0, maxActions);
-				float a = b - 0.8;
-				if (a < vActionNb && vActionNb < b) {
-					const vec3 chl = vec3(0.1, 1.0, 0.1);
-					float p = (vActionNb - a) / (b-a);
-					color.xyz += p*p*p*p * chl * 0.8;
-				}
-
-				gl_FragColor = color;
-			}
-		`
-	});
-	material.linewidth = 2;
 	const geometry = new THREE.BufferGeometry().setFromPoints(pts);
 	geometry.setAttribute('actionNb', new THREE.Float32BufferAttribute(actions, 1));
-	const line = new THREE.Line(geometry, material);
+	const line = new THREE.Line(geometry, line_material);
 	line.computeLineDistances();
 	line.material.uniforms.maxActions.value = actions[actions.length-1];
 	path_line = line;
