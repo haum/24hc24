@@ -38,6 +38,7 @@ const animations = [
 
 let gridSize = { x: 10, y: 10, z: 10 };
 let path_line = null;
+let playable_url = null;
 
 function coord_xyz_w(x, y, z) {
 	return {
@@ -263,6 +264,12 @@ export function parseLogTxt(txt) {
 		if (!map) return;
 		gridSize = { x: parseInt(map[1]), y: parseInt(map[2]), z: parseInt(map[3]) };
 		CUBESZ = 1 / Math.max(gridSize.x, gridSize.y, gridSize.z);
+	}
+
+	// Playable
+	{
+		const playable = txt.match(/PLAYABLE ([^\n]+)\n/);
+		playable_url = playable ? playable[1] : null;
 	}
 
 	// Grid on
