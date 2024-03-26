@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { StereoscopicEffects } from 'threejs-StereoscopicEffects';
 import { ViewerControls } from './controller.js';
 
-let scene, background, lights, camera, renderer, controls, stereofx, modecombo;
+let scene, background, lights, camera, renderer, controls, stereofx, modecombo, playbtns;
 let CUBESZ = 0.1;
 const world = new THREE.Group();
 const cube_types = [
@@ -229,6 +229,8 @@ function addPath_line_START(px, py, pz) {
 	for (let s of path_spheres) world.remove(s);
 	path_spheres.splice(0, path_spheres.length);
 	path_spheres.push(sphere);
+
+	if (playable_url) playbtns.visible = true;
 }
 function addPath_line_ACC(ax, ay, az) {
 	pathdata.vx += ax;
@@ -263,6 +265,8 @@ function addPath_line_END(ok, moves) {
 		path_spheres[last_i].material = ok ? path_sphere_material_ok : path_sphere_material_ko;
 	}
 	pathdata.moves = moves;
+	playable_url = null;
+	playbtns.visible = false;
 }
 function addPath_lines(txt) {
 	const lines = txt.match(/.*\n/g) || [];
@@ -399,6 +403,13 @@ export function parseLogFetch(url) {
 	fetch(url)
 		.then(r => r.arrayBuffer())
 		.then(b => parseLog(b));
+}
+
+async function play(Ax, Ay, Az) {
+	if (!playable_url) return;
+	const r = await fetch(playable_url, { method: "POST", headers: { "Content-Type": "text/plain" }, body: "ACC " + Ax + " " + Ay + " " + Az });
+	const t = await r.text();
+	addPath_lines(t);
 }
 
 function animWall(opacityMin, opacityMax, duration) {
@@ -569,6 +580,37 @@ export function init() {
 		reader.readAsArrayBuffer(file);
 		return false;
 	};
+
+	const div_play = document.createElement('div');
+	Object.defineProperty(div_play, "visible", {
+		get: function () {
+			return this.visible_v;
+		},
+		set: function (v) {
+			this.visible_v = v;
+			this.style.display = v ? 'block' : 'none';
+		},
+		enumerable: true,
+		configurable: true,
+	});
+	for (let i of [-1, 0, 1]) for (let j of [-1, 0, 1]) for (let k of [-1, 0, 1]) {
+		const btn_play = document.createElement('button');
+		btn_play.innerText = i + " " + j + " " + k;
+		btn_play.style.width = '80px';
+		btn_play.style.height = '40px';
+		btn_play.style.position = 'absolute';
+		btn_play.style.bottom = ((j+1) * 40) + 'px';
+		btn_play.style.left = ((i+1)*80 + (k+1)*(3*80+20)) + 'px';
+		btn_play.addEventListener('click', (e) => {
+			e.stopPropagation();
+			div_play.visible = false;
+			play(i, j, k).then(() => { if (playable_url) div_play.visible = true; });
+		});
+		div_play.appendChild(btn_play);
+	}
+	overlay.appendChild(div_play);
+	playbtns = div_play;
+	playbtns.visible = false;
 
 	renderer.setAnimationLoop(render);
 }
