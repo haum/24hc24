@@ -128,14 +128,14 @@ function addTitle(text) {
 
 function addCube(i, t, px, py, pz, mx, my, mz) {
 	const p = coord_l2xyz(i);
-	const sx = (px+mx)*CUBESZ/2;
-	const sy = (py+my)*CUBESZ/2;
-	const sz = (pz+mz)*CUBESZ/2;
+	const sx = (px+mx)*CUBESZ/6;
+	const sy = (py+my)*CUBESZ/6;
+	const sz = (pz+mz)*CUBESZ/6;
 	const geometry = new THREE.BoxGeometry(sx, sy, sz);
 	const cube = new THREE.Mesh(geometry, cube_types[t]);
-	cube.position.x = p.wx + (sx - mx * CUBESZ)/2;
-	cube.position.y = p.wy + (sy - my * CUBESZ)/2;
-	cube.position.z = p.wz + (sz - mz * CUBESZ)/2;
+	cube.position.x = p.wx + (sx - mx/3 * CUBESZ)/2;
+	cube.position.y = p.wy + (sy - my/3 * CUBESZ)/2;
+	cube.position.z = p.wz + (sz - mz/3 * CUBESZ)/2;
 	cube.renderOrder = 1;
 	cube.animation = animations[2*t];
 	world.add(cube);
@@ -290,17 +290,16 @@ export function parseLogTxt(txt) {
 
 	// Decode grid
 	{
-		const ratios = [0, 1/3, 2/3, 1]
 		const grid = txt.match(/MAP.*\n([\s\S]*)ENDMAP/m)[1]?.replaceAll(/[^A-Za-z0-9+\/]+/g, '')?.match(/.{3}/g) || [];
 		for (const [i, v] of grid.entries()) {
 			if (v == 'AAA') continue;
 			const nb = b64_atoi(v);
-			const px = ratios[(nb & (3 << 0)) >> 0];
-			const mx = ratios[(nb & (3 << 2)) >> 2];
-			const py = ratios[(nb & (3 << 4)) >> 4];
-			const my = ratios[(nb & (3 << 6)) >> 6];
-			const pz = ratios[(nb & (3 << 8)) >> 8];
-			const mz = ratios[(nb & (3 << 10)) >> 10];
+			const px = (nb & (3 << 0)) >> 0;
+			const mx = (nb & (3 << 2)) >> 2;
+			const py = (nb & (3 << 4)) >> 4;
+			const my = (nb & (3 << 6)) >> 6;
+			const pz = (nb & (3 << 8)) >> 8;
+			const mz = (nb & (3 << 10)) >> 10;
 			const bt = (nb & (7 << 12)) >> 12;
 			addCube(i, bt, px, py, pz, mx, my, mz);
 		}
