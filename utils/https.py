@@ -3,9 +3,11 @@
 import http.server
 import os
 import re
+import random
 import socket
 import socketserver
 import ssl
+import string
 import sys
 
 def ip():
@@ -57,7 +59,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             html = f.read()
         subvars = {
                 "log_list": "",
-                "map_list": ""
+                "map_list": "",
+                "play_map_list": ""
         }
         for f in os.listdir(mapsdir):
             if os.path.isfile(mapsdir + '/' + f):
@@ -65,9 +68,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     subvars["log_list"] += f'<p><a href="viewer.htm#maps/{f}">{f}</a></p>\n'
                 elif f.endswith('.map'):
                     subvars["map_list"] += f'<p><a href="viewer.htm#maps/{f}">{f}</a></p>\n'
+                    subvars["play_map_list"] += f'<p><a href="viewer.htm#playmaps/{f}">{f}</a></p>\n'
         for k, v in subvars.items():
             html = re.sub("{{\s*" + k + "\s*}}", v, html)
         self._send_html(html)
+
+    def dyn_playmaps(self, mapfile):
+        gameid = ''.join(random.choices(string.ascii_letters, k=6))
+        text = 'PLAYABLE /api/playing/' + mapfile + '/' + gameid + '\n'
+        with open(mapsdir + '/' + mapfile, 'r') as f:
+            text += f.read()
+        self._send_text(text)
 
     def do_GET(self):
         for p, f in _route_get:
@@ -90,6 +101,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             super().do_POST()
 
 route_GET(r"^/$", Handler.dyn_index)
+route_GET(r"^/playmaps/(.+)$", Handler.dyn_playmaps)
 route_GET(r"^/index.htm$", lambda s: s._redirect301('/'))
 
 with socketserver.TCPServer(("", port), Handler) as httpd:
