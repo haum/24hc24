@@ -5,8 +5,10 @@ import { ViewerControls } from './controller.js';
 let scene, background, lights, camera, renderer, controls, stereofx, modecombo, playbtns;
 let CUBESZ = 0.1;
 let stereorender = true;
+const xr_pointers = []
 const world = new THREE.Group();
 const raycaster = new THREE.Raycaster();
+const raycaster_matrix = new THREE.Matrix4();
 const cube_types = [
 	new THREE.MeshLambertMaterial({ color: 0x333333, transparent: true, opacity: 0.8 }), // Goals
 	new THREE.MeshLambertMaterial({ color: 0x0066d4, transparent: true, opacity: 0.8 }), // Asteroids
@@ -568,16 +570,63 @@ export function init() {
 	});
 
 	let xr_prev_bg;
+	const xr_ray_material = new THREE.LineBasicMaterial({ color: 0xffffff });
 	renderer.xr.addEventListener('sessionstart', () => {
 		xr_prev_bg = scene.background;
 		scene.background = new THREE.Color(0);
 		btn_vr.innerText = 'Stop';
 		btn_ar.innerText = 'Stop';
+
+		for (let i = 0; i < 5; i++) {
+			const pointer = renderer.xr.getController(i);
+			if (!pointer) continue;
+			xr_pointers.push(pointer);
+			scene.add(pointer);
+
+			pointer.addEventListener('connected', e => {
+				if (e.data.profiles && e.data.profiles.length != 0) {
+					const ray_geometry = new THREE.BufferGeometry();
+					ray_geometry.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 0, 0, -1], 3));
+					const ray = new THREE.Line(ray_geometry, xr_ray_material);
+					ray.scale.setScalar(0.05);
+					pointer.add(ray);
+				}
+			});
+			pointer.addEventListener('selectstart', () => {
+				raycaster_matrix.identity().extractRotation(pointer.matrixWorld);
+				raycaster.ray.origin.setFromMatrixPosition(pointer.matrixWorld);
+				raycaster.ray.direction.set(0, 0, -1).applyMatrix4(raycaster_matrix);
+				let clicked = false;
+				const intersects = raycaster.intersectObjects(playbtns.children, false);
+				for (let it of intersects) {
+					if ('onclick' in it.object.userData) {
+						clicked = true;
+						it.object.userData.onclick(it);
+						break;
+					}
+				}
+				if (!clicked) pointer.attach(world);
+			});
+			pointer.addEventListener('selectend', () => {
+				scene.attach(world);
+			});
+			pointer.addEventListener('squeezestart', () => {
+				pointer.attach(world);
+			});
+			pointer.addEventListener('squeezeend', () => {
+				scene.attach(world);
+			});
+		}
 	});
 	renderer.xr.addEventListener('sessionend', () => {
 		scene.background = xr_prev_bg;
 		btn_vr.innerText = 'VR';
 		btn_ar.innerText = 'AR';
+
+		for (let pointer of xr_pointers) {
+			scene.remove(pointer);
+		}
+		xr_pointers.splice(0, xr_pointers.length);
 	});
 
 	window.addEventListener('resize', () => {
@@ -634,6 +683,26 @@ function render(time) {
 	controls.update(time);
 	for (const o of world.children) if (o.animation) o.animation(o, time);
 	if (path_line) path_line.material.uniforms.t.value = time;
+	for (let pointer of xr_pointers) {
+		if (pointer.children.length == 0) continue;
+		raycaster_matrix.identity().extractRotation(pointer.matrixWorld);
+		raycaster.ray.origin.setFromMatrixPosition(pointer.matrixWorld);
+		raycaster.ray.direction.set(0, 0, -1).applyMatrix4(raycaster_matrix);
+		let found = false;
+		if (playbtns.visible) {
+			const intersects = raycaster.intersectObjects(playbtns.children, false);
+			for (let it of intersects) {
+				found = true;
+				pointer.children[0].material.color = it.object.material.color;
+				pointer.children[0].scale.setScalar(it.distance);
+				break;
+			}
+		}
+		if (!found) {
+			pointer.children[0].material.color = new THREE.Color(1, 1, 1);
+			pointer.children[0].scale.setScalar(2);
+		}
+	}
 	if (stereorender)
 		stereofx.render(scene, camera);
 	else
