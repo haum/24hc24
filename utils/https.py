@@ -108,5 +108,6 @@ with socketserver.TCPServer(("", port), Handler) as httpd:
     print(f'https://{ip()}:{port}/')
     sslctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     sslctx.load_cert_chain(pem)
+    httpd.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     httpd.socket = sslctx.wrap_socket(httpd.socket)
     httpd.serve_forever()
