@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 
-import http.server, ssl, os, sys, socket
+import http.server
+import os
+import re
+import socket
 import socketserver
+import ssl
+import sys
 
 def ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -16,23 +21,80 @@ def ip():
 
 serverdir = os.path.dirname(os.path.abspath(__file__))
 httpdir = serverdir + '/../web_viewer'
+mapsdir = httpdir + '/maps'
 pem = serverdir + '/server.pem'
 port = int(sys.argv[1]) if len(sys.argv) == 2 else 4343
-#httpd = http.server.HTTPServer(('0.0.0.0', port), http.server.SimpleHTTPRequestHandler)
 if not os.path.isfile(pem):
     os.system(f'openssl req -new -x509 -keyout {pem} -out {pem} -days 3650 -nodes -subj /C=US')
-#httpd.socket = ssl.wrap_socket(httpd.socket, certfile=pem, server_side=True)
-print(f'https://{ip()}:{port}/')
-#httpd.serve_forever()
 
-
+_route_get = []
+_route_post = []
+def route_GET(pattern, fct):
+    _route_get.append((re.compile(pattern), fct))
+def route_POST(pattern, fct):
+    _route_post.append((re.compile(pattern), fct))
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=httpdir, **kwargs)
 
+    def _redirect301(self, url):
+        self.send_response(301)
+        self.send_header("Location", url)
+        self.end_headers()
+
+    def _send_html(self, html):
+        self._send_text(html, "text/html")
+
+    def _send_text(self, text, ctype = "text/plain"):
+        self.send_response(200)
+        self.send_header("Content-type", ctype)
+        self.end_headers()
+        self.wfile.write(text.encode('utf-8'));
+
+    def dyn_index(self):
+        with open(httpdir + '/index.htm', 'r') as f:
+            html = f.read()
+        subvars = {
+                "log_list": "",
+                "map_list": ""
+        }
+        for f in os.listdir(mapsdir):
+            if os.path.isfile(mapsdir + '/' + f):
+                if f.endswith('.log'):
+                    subvars["log_list"] += f'<p><a href="viewer.htm#maps/{f}">{f}</a></p>\n'
+                elif f.endswith('.map'):
+                    subvars["map_list"] += f'<p><a href="viewer.htm#maps/{f}">{f}</a></p>\n'
+        for k, v in subvars.items():
+            html = re.sub("{{\s*" + k + "\s*}}", v, html)
+        self._send_html(html)
+
+    def do_GET(self):
+        for p, f in _route_get:
+            m = p.match(self.path)
+            if m:
+                g = m.groups() or []
+                f(self, *g)
+                break
+        else:
+            super().do_GET()
+
+    def do_POST(self):
+        for p, f in _route_post:
+            m = p.match(self.path)
+            if m:
+                g = m.groups() or []
+                f(self, *g)
+                break
+        else:
+            super().do_POST()
+
+route_GET(r"^/$", Handler.dyn_index)
+route_GET(r"^/index.htm$", lambda s: s._redirect301('/'))
 
 with socketserver.TCPServer(("", port), Handler) as httpd:
-    print("serving at port", port)
-    httpd.socket = ssl.wrap_socket(httpd.socket, certfile=pem, server_side=True)
+    print(f'https://{ip()}:{port}/')
+    sslctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    sslctx.load_cert_chain(pem)
+    httpd.socket = sslctx.wrap_socket(httpd.socket)
     httpd.serve_forever()
