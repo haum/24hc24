@@ -224,17 +224,10 @@ class Map:
         Vx, Vy, Vz = Vx+Ax, Vy+Ay, Vz+Az
         Px, Py, Pz = Px+Vx, Py+Vy, Pz+Vz
 
-        out_of_universe = False
-        submoves = 1
+        oou = 1
         for Vn, Pn, Nn in ((Vx, Px, self.Nx), (Vy, Py, self.Ny), (Vz, Pz, self.Nz)):
-            if Pn < 0:
-                submoves = min(submoves, (Vn - Pn - 0.5) / Vn)
-                out_of_universe = True
-            elif Pn >= Nn:
-                submoves = min(submoves, (Vn - Pn - 0.5 + Nn) / Vn)
-                out_of_universe = True
-        if out_of_universe:
-            return self.PathAnalysis(False, submoves, "Out of the universe")
+            if Pn < 0: oou = min(oou, (Vn - Pn - 0.5) / Vn)
+            elif Pn >= Nn: oou = min(oou, (Vn - Pn - 0.5 + Nn) / Vn)
 
         intersections = []
         for Vn in (Vx, Vy, Vz):
@@ -242,6 +235,10 @@ class Map:
                 for i in range(6*abs(Vn)+1):
                     t = 1 - i / abs(Vn) / 6;
                     Ix, Iy, Iz = Px - t * Vx, Py - t * Vy, Pz - t * Vz
+                    if Ix < 0 or Ix >= self.Nx or \
+                       Iy < 0 or Iy >= self.Ny or \
+                       Iz < 0 or Iz >= self.Nz:
+                        break
                     Bx, By, Bz = round(Ix), round(Iy), round(Iz)
                     b = self[Bx, By, Bz]
                     if b.empty: continue
@@ -265,6 +262,9 @@ class Map:
                 if checkpoint == 2: checkpoint += 1
             elif bc.bt == self.BlockType.CP4:
                 if checkpoint == 3: checkpoint += 1
+
+        if oou < 1:
+            return self.PathAnalysis(False, oou, "Out of the universe")
         return Map.State(Px, Py, Pz, Vx, Vy, Vz, checkpoint)
 
 
