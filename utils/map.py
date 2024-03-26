@@ -80,6 +80,10 @@ class Map:
         return self[self.Sx, self.Sy, self.Sz]
 
     @property
+    def startstate(self):
+        return Map.State(self.Sx, self.Sy, self.Sz, 0, 0, 0, 0)
+
+    @property
     def maxcp(self):
         if self.maxcp_cache is None:
             maxcp = 0
@@ -170,10 +174,8 @@ class Map:
 
     def analyze_path(self, pathdesc):
         moves = 0
-        checkpoint = 0
         victory = False
-        Vx, Vy, Vz = 0, 0, 0
-        Px, Py, Pz = self.Sx, self.Sy, self.Sz
+        state = self.startstate
 
         for p in filter(None, pathdesc.splitlines()):
             if victory:
@@ -183,11 +185,10 @@ class Map:
             if not m: return self.PathAnalysis(False, moves, "Invalid line syntax")
 
             Ax, Ay, Az = map(int, m.groups())
-            state = Map.State(Px, Py, Pz, Vx, Vy, Vz, checkpoint)
             result = self.analyze_path_step(state, Ax, Ay, Az)
 
             if isinstance(result, Map.State):
-                Px, Py, Pz, Vx, Vy, Vz, checkpoint = result
+                state = result
                 moves += 1
             else:
                 ok, submoves, msg = result
