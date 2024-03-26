@@ -17,7 +17,7 @@ body {
 	width: 1000px;
 	margin: 0 auto;
 	background-image: url("/static/viewer/bg.webp");
-	background-size: cover;
+	background-size: 100% 100%;
 	background-attachment: fixed;
 	color: white;
 
