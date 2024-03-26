@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework import authentication, permissions
 from django.contrib.auth.models import User
 
-from .models import Map, Game, Stage, Team
+from .models import Map, Game, Stage, Team, Score
 
 def index(request):
     teams = Team.objects.filter(user__last_name="team")
@@ -30,9 +30,9 @@ class TokenTestView(APIView):
 
 class NewMapView(APIView):
 
-    def post(self, request):
+    def post(self, request, stage_endpoint=None):
         map_data = request.data.get('map')
-        stage_endpoint = request.data.get('stage')
+        # stage_endpoint = request.data.get('stage')
         if stage_endpoint is not None:
             try:
                 stage = Stage.objects.get(endpoint=stage_endpoint)
@@ -73,7 +73,7 @@ class NewGameView(APIView):
                 stage = Stage.objects.get(endpoint=stage_endpoint)
             except Stage.DoesNotExist:
                 return Response(
-                    {'status': 'error', 'message': f'No stage named {stage_name} found'},
+                    {'status': 'error', 'message': f'No stage named {stage_endpoint} found'},
                     status=status.HTTP_404_NOT_FOUND
                 )
 
@@ -108,11 +108,11 @@ class NewGameView(APIView):
         return Response({'status': 'success', 'game_id': game.id})
 
 class ProposeSolutionView(APIView):
-    def post(self, request, game_id=None):
+    def post(self, request, game_id):
         moves = request.data.get('moves')
-        if game_id is None or moves is None:
+        if moves is None:
             return Response(
-                {'status': 'error', 'message': 'game_id and moves are required'},
+                {'status': 'error', 'message': 'Moves are required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         try:
@@ -134,30 +134,63 @@ class ProposeSolutionView(APIView):
         return Response({'status': 'success', 'reference_score': analysis_result.moves,
                          'message': analysis_result.msg, 'victory': analysis_result.ok})
 
-
 class ScoreGameView(APIView):
 
-    def post(self, request):
+    def get(self, request, stage_endpoint=None):
         referee = request.user
-        stage_id = request.data.get('stage_id')
+        if stage_endpoint is not None:
+            try:
+                stage = Stage.objects.get(endpoint=stage_endpoint)
+            except Stage.DoesNotExist:
+                return Response(
+                    {'status': 'error', 'message': f'No stage named {stage_endpoint} found'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            game = Game.objects.filter(map__proposed_by=referee, stage=stage, score=None, finished=True).order_by('?').first()
+            return Response({'game_id': game.id, 'map': game.map.map_data, 'moves': game.moves, 'stage': stage.endpoint})
+        else:
+            game = Game.objects.filter(map__proposed_by=referee, score=None, finished=True).order_by('?').first()
+            return Response({'game_id': game.id, 'map': game.map.map_data, 'moves': game.moves})
+
+    def post(self, request, stage_endpoint=None):
+        referee = request.user
         game_id = request.data.get('game_id')
         score = request.data.get('score')
 
-        if score is not None and game_id is not None:
-            pass
-        else:
-            # return a game to score
-            if stage_id is not None:
-                try:
-                    stage = Stage.objects.get(stage_id=stage_id)
-                except Stage.DoesNotExist:
-                    return Response(
-                        {'status': 'error', 'message': f'No stage named {stage_id} found'},
-                        status=status.HTTP_404_NOT_FOUND
-                    )
-               # check wether a game in the stage without score given by the referee exist
+        try:
+            game = Game.objects.get(pk=game_id)
+        except Game.DoesNotExist:
+            return Response(
+                {'status': 'error', 'message': f'No game with id {game_id} found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
+        if game.map.proposed_by != referee:
+            return Response(
+                {'status': 'error', 'message': 'You are not allowed to score this game'},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
-            game = Game.objects.filter(map__proposed_by=referee, finished=True).order_by('?').first()
-            return Response({'game_id': game.id, 'map': game.map.map_data, 'moves': game.moves})
+        if game.score_set.count():
+            return Response(
+                {'status': 'error', 'message': 'This game has already been scored'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if stage_endpoint is not None:
+            try:
+                stage = Stage.objects.get(endpoint=stage_endpoint)
+            except Stage.DoesNotExist:
+                return Response(
+                    {'status': 'error', 'message': f'No stage named {stage_endpoint} found'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            if game.stage != stage:
+                return Response(
+                    {'status': 'error', 'message': f'This game does not belong to stage {stage_endpoint}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        score = Score(game=game, referee=referee, score=score)
+        score.save()
+        return Response({'message': 'Score saved'})
 

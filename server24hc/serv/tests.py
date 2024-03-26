@@ -4,7 +4,7 @@ import random
 
 from django.urls import reverse
 from rest_framework.authtoken.models import Token
-from .models import Map, Game, Stage
+from .models import Map, Game, Stage, Score
 
 @pytest.fixture
 def test_password():
@@ -65,7 +65,7 @@ class TestMapSubmission:
     def test_new_map(self, api_client, get_or_create_token, simple_map_str):
         token = get_or_create_token
         api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
-        response = api_client.post('/api/newmap', {'map': simple_map_str})
+        response = api_client.post('/api/map/new', {'map': simple_map_str})
         assert response.status_code == 200
         db_map = Map.objects.all().last()
         assert db_map.map_data == simple_map_str
@@ -74,16 +74,22 @@ class TestMapSubmission:
     def test_new_map_no_arrival(self, api_client, get_or_create_token, invalid_map_str_no_arrival):
         token = get_or_create_token
         api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
-        response = api_client.post('/api/newmap', {'map': invalid_map_str_no_arrival})
+        response = api_client.post('/api/map/new', {'map': invalid_map_str_no_arrival})
         assert response.status_code == 400
         assert response.data['message'] == 'Invalid map'
         assert response.data['map_error'] == 'No arrival'
 
+    def test_no_map_data(self, api_client, get_or_create_token):
+        token = get_or_create_token
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = api_client.post('/api/map/new', {})
+        assert response.status_code == 400
+        assert response.data['message'] == 'No map data found'
 
     def test_add_map_to_running_stage(self, api_client, get_or_create_token, simple_map_str, stage_running):
         token = get_or_create_token
         api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
-        response = api_client.post('/api/newmap', {'map': simple_map_str, 'stage': stage_running.endpoint})
+        response = api_client.post(f'/api/map/new/{stage_running.endpoint}', {'map': simple_map_str})
         assert response.status_code == 200
         db_map = Map.objects.all().last()
         assert db_map.map_data == simple_map_str
@@ -93,13 +99,13 @@ class TestMapSubmission:
     def test_add_map_to_non_running_stage(self, api_client, get_or_create_token, simple_map_str, stage):
         token = get_or_create_token
         api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
-        response = api_client.post('/api/newmap', {'map': simple_map_str, 'stage': stage.endpoint})
+        response = api_client.post(f'/api/map/new/{stage.endpoint}', {'map': simple_map_str})
         assert response.status_code == 403
 
     def test_add_map_to_non_exisitent_stage(self, api_client, get_or_create_token, simple_map_str):
         token = get_or_create_token
         api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
-        response = api_client.post('/api/newmap', {'map': simple_map_str, 'stage': "phony"})
+        response = api_client.post('/api/map/new/phony', {'map': simple_map_str})
         assert response.status_code == 404
 
 class TestGameRequestMechanics:
@@ -143,6 +149,13 @@ class TestGameRequestMechanics:
         api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         response = api_client.get(f'/api/game/new/{stage_no_map.endpoint}')
         assert response.status_code == 403, response.data
+
+    def test_new_game_stage_inexistent_stage(self, api_client, get_or_create_token):
+        token = get_or_create_token
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = api_client.get('/api/game/new/phony_map')
+        assert response.status_code == 404, response.data
+        assert response.data['message'] == 'No stage named phony_map found'
 
     def test_new_game_stage_nomap_left(self, api_client, get_or_create_token, stage_no_map):
         stage_no_map.running = True
@@ -226,7 +239,6 @@ START 2 1 2""", proposed_by=self.user))
         for _ in self.maps:
             _.save()
         yield 'setup done'
-        self.game.delete()
         for _ in self.maps:
             _.delete()
         self.user.delete()
@@ -260,7 +272,6 @@ ACC -1 0 0"""
         self.game.delete()
         self.player_user.delete()
 
-    @pytest.mark.skip
     def test_valid_solution(self, api_client, setup_game_firstmap, first_map_solution):
         token = Token.objects.get(user=self.player_user)
         api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
@@ -270,15 +281,117 @@ ACC -1 0 0"""
         db_game = Game.objects.get(pk=self.game.id)
         assert db_game.finished
         assert db_game.moves == first_map_solution
-        assert db_game.reference_score == 7.41666
+        assert db_game.reference_score == pytest.approx(7.416666, rel=1e-6)
 
+    def test_inexistent_game(self, api_client, setup_game_firstmap, first_map_solution):
+        token = Token.objects.get(user=self.player_user)
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = api_client.post(f'/api/game/999/solve', {'moves': first_map_solution})
+        assert response.status_code == 404, response.data
+        assert response.data['message'] == 'No game with id 999 found'
 
+    def test_incorrect_payload(self, api_client, setup_game_firstmap, first_map_solution):
+        token = Token.objects.get(user=self.player_user)
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = api_client.post(f'/api/game/{self.game.id}/solve', {})
+        assert response.status_code == 400, response.data
+        assert response.data['message'] == 'Moves are required'
 
+    def test_incorrect_player(self, api_client, setup_game_firstmap, first_map_solution, create_user):
+        new_user = create_user()
+        token, _ = Token.objects.get_or_create(user=new_user)
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = api_client.post(f'/api/game/{self.game.id}/solve', {'moves': first_map_solution})
+        assert response.status_code == 403, response.data
+        assert response.data['message'] == 'You are not allowed to propose a solution for this game'
 
-# tests:
-# - out of time
-# - invalid move list
-# - valid move list
-# - game completion
+class TestScoringMechanics:
+    @pytest.fixture
+    def setup_finished_game(self, create_user):
+        self.referee = create_user()
+        self.player = create_user()
+        self.referee_token, _ = Token.objects.get_or_create(user=self.referee)
+        self.player_token, _  = Token.objects.get_or_create(user=self.player)
+        self.map = Map(map_data='MAP 2 2 2\nAAA AAA\nAAA AAA\nAAA AAA\nAAA A//\nENDMAP\nSTART 0 0 0', proposed_by=self.referee)
+        self.map.save()
+        self.game = Game(map=self.map, player=self.player, finished=True, moves='ACC 1 1 1')
+        self.game.save()
 
+    @pytest.fixture
+    def setup_finished_game_stage(self, create_user):
+        self.referee = create_user()
+        self.player = create_user()
+        self.referee_token, _ = Token.objects.get_or_create(user=self.referee)
+        self.player_token, _  = Token.objects.get_or_create(user=self.player)
+        self.map = Map(map_data='MAP 2 2 2\nAAA AAA\nAAA AAA\nAAA AAA\nAAA A//\nENDMAP\nSTART 0 0 0', proposed_by=self.referee)
+        self.map.save()
+        self.stage = Stage(endpoint='test', running=True)
+        self.stage.save()
+        self.game = Game(map=self.map, stage=self.stage, player=self.player, finished=True, moves='ACC 1 1 1')
+        self.game.save()
 
+    @pytest.fixture
+    def setup_finished_game_out_of_stage(self, create_user):
+        self.referee = create_user()
+        self.player = create_user()
+        self.referee_token, _ = Token.objects.get_or_create(user=self.referee)
+        self.player_token, _  = Token.objects.get_or_create(user=self.player)
+        self.map = Map(map_data='MAP 2 2 2\nAAA AAA\nAAA AAA\nAAA AAA\nAAA A//\nENDMAP\nSTART 0 0 0', proposed_by=self.referee)
+        self.map.save()
+        self.stage = Stage(endpoint='test', running=True)
+        self.stage.save()
+        self.game = Game(map=self.map, player=self.player, finished=True, moves='ACC 1 1 1')
+        self.game.save()
+
+    def test_score_game(self, api_client, setup_finished_game):
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + self.referee_token.key)
+        response = api_client.get('/api/score/')
+        assert response.status_code == 200, response.data
+        assert response.data['game_id'] == self.game.id
+        assert response.data['map'] == self.map.map_data
+        assert response.data['moves'] == self.game.moves
+
+        response = api_client.post('/api/score/', {'game_id': response.data['game_id'], 'score': 1})
+        assert response.status_code == 200, response.data
+        assert response.data['message'] == 'Score saved'
+
+    def test_score_game_in_stage(self, api_client, setup_finished_game_stage):
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + self.referee_token.key)
+        response = api_client.get(f'/api/score/{self.stage.endpoint}')
+        assert response.status_code == 200, response.data
+        assert response.data['game_id'] == self.game.id
+        assert response.data['map'] == self.map.map_data
+        assert response.data['moves'] == self.game.moves
+
+        response = api_client.post('/api/score/', {'game_id': response.data['game_id'], 'score': 1})
+        assert response.status_code == 200, response.data
+        assert response.data['message'] == 'Score saved'
+
+    def test_score_no_game_with_id(self, api_client, setup_finished_game):
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + self.referee_token.key)
+        response = api_client.post('/api/score/', {'game_id': 999, 'score': 1})
+        assert response.status_code == 404, response.data
+
+    def test_score_inexistent_stage(self, api_client, setup_finished_game_stage):
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + self.referee_token.key)
+        response = api_client.post('/api/score/phony_stage', {'game_id': self.game.id, 'score': 1})
+        assert response.status_code == 404, response.data
+
+    def test_score_game_in_different_stage(self, api_client, setup_finished_game_out_of_stage):
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + self.referee_token.key)
+        response = api_client.post(f'/api/score/{self.stage.endpoint}', {'game_id': self.game.id, 'score': 1})
+        assert response.status_code == 400, response.data
+
+    def test_score_bad_referee(self, api_client, setup_finished_game):
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + self.player_token.key)
+        response = api_client.post(f'/api/score/', {'game_id': self.game.id, 'score': 1})
+        assert response.status_code == 403, response.data
+
+    def test_score_already_scored(self, api_client, setup_finished_game):
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + self.referee_token.key)
+        response = api_client.post('/api/score/', {'game_id': self.game.id, 'score': 1})
+        assert response.status_code == 200, response.data
+        assert response.data['message'] == 'Score saved'
+        response = api_client.post('/api/score/', {'game_id': self.game.id, 'score': 1})
+        assert response.status_code == 403, response.data
+        assert response.data['message'] == 'This game has already been scored'

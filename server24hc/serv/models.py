@@ -34,7 +34,7 @@ class Map(models.Model):
         return self.proposed_by.username + " - " + str(self.proposed_at)
 
     def validate(self):
-        errors = MapUtils(self.map_data).find_errors()
+        errors = MapUtils(self.map_data).find_error()
         return errors is None, errors
 
 class Stage(models.Model):
@@ -54,14 +54,18 @@ class Game(models.Model):
     completed_at = models.DateTimeField(null=True, blank=True, default=None)
     finished = models.BooleanField(default=False)
     player = models.ForeignKey(User, on_delete=models.CASCADE, related_name='player')
-    reference_score = models.IntegerField(null=True, blank=True)
+    reference_score = models.FloatField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.finished and self.reference_score is None:
+            self.compute_reference_score()
+        super().save(*args, **kwargs)
 
     def compute_reference_score(self):
         if self.finished:
             m = MapUtils(self.map.map_data)
             analysis_result = m.analyze_path(self.moves)
             self.reference_score = analysis_result.moves
-            self.save()
             return analysis_result
         else:
             return None
