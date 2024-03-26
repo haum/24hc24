@@ -4,6 +4,7 @@ import { ViewerControls } from './controller.js';
 
 let scene, background, lights, camera, renderer, controls, stereofx, modecombo, playbtns;
 let CUBESZ = 0.1;
+let stereorender = true;
 const world = new THREE.Group();
 const cube_types = [
 	new THREE.MeshLambertMaterial({ color: 0x333333, transparent: true, opacity: 0.8 }), // Goals
@@ -430,12 +431,14 @@ function animCheckpoint(nr, duration) {
 	}
 }
 
-function changeStereomMode(mode) {
+function changeStereoMode(mode) {
 	stereofx.setEffect(mode);
 	if (mode > 18)
 		scene.background = new THREE.Color(0xAAAAAA);
 	else
 		scene.background = background;
+	stereorender = (mode != 'm');
+	if (playbtns) playbtns.visible = playable_url && !stereorender;
 	window.localStorage.setItem("stereoMode", mode);
 }
 
@@ -481,12 +484,16 @@ export function init() {
 	document.body.appendChild(overlay);
 
 	modecombo = StereoscopicEffects.effectsListForm();
+	modecombo.firstChild.label = "Monoscopic"
+	modecombo.firstChild.firstChild.remove();
+	modecombo.firstChild.firstChild.label = "Monoscopic";
+	modecombo.firstChild.firstChild.value = "m";
 	modecombo.value = defaultEffect;
 	modecombo.style.position = 'absolute';
 	modecombo.style.top = 0;
 	modecombo.style.right = 0;
-	modecombo.addEventListener('change', () => changeStereomMode(modecombo.value));
-	changeStereomMode(defaultEffect);
+	modecombo.addEventListener('change', () => changeStereoMode(modecombo.value));
+	changeStereoMode(defaultEffect);
 	overlay.appendChild(modecombo);
 	document.addEventListener('keydown', e => {
 		if (e.keyCode == 77)
@@ -619,5 +626,8 @@ function render(time) {
 	controls.update(time);
 	for (const o of world.children) if (o.animation) o.animation(o, time);
 	if (path_line) path_line.material.uniforms.t.value = time;
-	stereofx.render(scene, camera);
+	if (stereorender)
+		stereofx.render(scene, camera);
+	else
+		renderer.render(scene, camera);
 }
