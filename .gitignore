@@ -4,4 +4,4 @@ server.pem
 db.sqlite3
 htmlcov
 .coverage
-
+migrations
