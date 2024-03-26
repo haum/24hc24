@@ -189,27 +189,102 @@ function addCube(i, t, px, py, pz, mx, my, mz) {
 	world.add(edges);
 }
 
-function addPath(pts, actions) {
-	const sphere_geometry = new THREE.SphereGeometry(CUBESZ/20, 8, 8);
-	const sphere_material = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
-	for (const pt of pts.slice(0, -1)) {
-		const sphere = new THREE.Mesh(sphere_geometry, sphere_material);
-		sphere.position.add(pt);
-		world.add(sphere);
+const path_sphere_material = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
+const path_sphere_material_ko = new THREE.MeshBasicMaterial({ color: 0xaa0000, transparent: true, opacity: 0.5 });
+const path_sphere_material_ok = new THREE.MeshBasicMaterial({ color: 0x00aa00, transparent: true, opacity: 0.5 });
+const path_spheres = [];
+const pathdata = {
+	'px': 0, 'py': 0, 'pz': 0,
+	'vx': 0, 'vy': 0, 'vz': 0,
+	'moves': 0
+};
+function path_rebuild_line() {
+	if (path_line) world.remove(path_line);
+	const pts = []
+	const actions = []
+	for (let p of path_spheres) {
+		pts.push(p.position);
+		actions.push(actions.length);
 	}
-	if (pts.length == 1) {
-		const sphere = new THREE.Mesh(sphere_geometry, sphere_material);
-		sphere.position.add(pts[0]);
-		world.add(sphere);
-	}
-
+	actions[actions.length-1] = pathdata.moves;
 	const geometry = new THREE.BufferGeometry().setFromPoints(pts);
 	geometry.setAttribute('actionNb', new THREE.Float32BufferAttribute(actions, 1));
-	const line = new THREE.Line(geometry, line_material);
-	line.computeLineDistances();
-	line.material.uniforms.maxActions.value = actions[actions.length-1];
-	path_line = line;
-	world.add(line);
+	path_line = new THREE.Line(geometry, line_material);
+	path_line.computeLineDistances();
+	path_line.material.uniforms.maxActions.value = actions[actions.length-1];
+	world.add(path_line);
+}
+function addPath_line_START(px, py, pz) {
+	pathdata.px = px;
+	pathdata.py = py;
+	pathdata.pz = pz;
+	pathdata.vx = pathdata.vy = pathdata.vz = pathdata.moves = 0;
+
+	const sphere_geometry = new THREE.SphereGeometry(CUBESZ/20, 8, 8);
+	const sphere = new THREE.Mesh(sphere_geometry, path_sphere_material);
+	const q = coord_xyz_w(px, py, pz);
+	sphere.position.set(q.wx, q.wy, q.wz);
+	world.add(sphere);
+
+	for (let s of path_spheres) world.remove(s);
+	path_spheres.splice(0, path_spheres.length);
+	path_spheres.push(sphere);
+}
+function addPath_line_ACC(ax, ay, az) {
+	pathdata.vx += ax;
+	pathdata.vy += ay;
+	pathdata.vz += az;
+	pathdata.px += pathdata.vx;
+	pathdata.py += pathdata.vy;
+	pathdata.pz += pathdata.vz;
+	pathdata.moves += 1;
+
+	const sphere_geometry = new THREE.SphereGeometry(CUBESZ/20, 8, 8);
+	const sphere = new THREE.Mesh(sphere_geometry, path_sphere_material);
+	const q = coord_xyz_w(pathdata.px, pathdata.py, pathdata.pz);
+	sphere.position.set(q.wx, q.wy, q.wz);
+	world.add(sphere);
+	path_spheres.push(sphere);
+}
+function addPath_line_END(ok, moves) {
+	const last_i = Math.floor(moves) + 1;
+	const nextra = path_spheres.length - last_i;
+	if (nextra > 0) {
+		for (let i = last_i+1; i < path_spheres.length; i++) {
+			world.remove(path_spheres[i]);
+		}
+		path_spheres.splice(last_i + 1, nextra);
+	}
+	if (last_i < path_spheres.length && last_i > 0) {
+		const dv = new THREE.Vector3();
+		dv.subVectors(path_spheres[last_i-1].position, path_spheres[last_i].position);
+		dv.multiplyScalar(1 - (moves % 1));
+		path_spheres[last_i].position.add(dv);
+		path_spheres[last_i].material = ok ? path_sphere_material_ok : path_sphere_material_ko;
+	}
+	pathdata.moves = moves;
+}
+function addPath_lines(txt) {
+	const lines = txt.match(/.*\n/g) || [];
+	for (const line of lines) {
+		const d = line.split(/\s/);
+		if (d[0] == "START") {
+			const px = parseInt(d[1]);
+			const py = parseInt(d[2]);
+			const pz = parseInt(d[3]);
+			addPath_line_START(px, py, pz)
+		} else if (d[0] == "ACC") {
+			const ax = parseInt(d[1]);
+			const ay = parseInt(d[2]);
+			const az = parseInt(d[3]);
+			addPath_line_ACC(ax, ay, az);
+		} else if (d[0] == "END") {
+			const ok = d[1] == "OK";
+			const moves = parseFloat(d[2]);
+			addPath_line_END(ok, moves);
+		}
+	}
+	path_rebuild_line();
 }
 
 const b64_digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -315,42 +390,8 @@ export function parseLogTxt(txt) {
 
 	// Path
 	{
-		const path = (txt.match(/(START[\s\S]*END.*\n)/m)?.[1] || txt.match(/(START[\s\S]*\n)/)?.[1])?.match(/.*\n/g) || [];
-		const points = [];
-		const actions = [];
-		let px = 0, py = 0, pz = 0;
-		let vx = 0, vy = 0, vz = 0;
-		for (const p of path) {
-			const d = p.split(/\s/);
-			if (d[0] == "START") {
-				px = parseInt(d[1]);
-				py = parseInt(d[2]);
-				pz = parseInt(d[3]);
-				const q = coord_xyz_w(px, py, pz);
-				points.push(new THREE.Vector3(q.wx, q.wy, q.wz));
-				actions.push(0.0);
-			} else if (d[0] == "ACC") {
-				vx += parseInt(d[1]);
-				vy += parseInt(d[2]);
-				vz += parseInt(d[3]);
-				px += vx;
-				py += vy;
-				pz += vz;
-				const q = coord_xyz_w(px, py, pz);
-				points.push(new THREE.Vector3(q.wx, q.wy, q.wz));
-				actions.push(actions.length * 1.0);
-			} else if (d[0] == "END") {
-				const l = Math.min(parseFloat(d[2]), points.length-1);
-				const origin = points[Math.floor(l)];
-				const destination = points[Math.ceil(l)];
-				const ndest = origin.clone().lerp(destination, l%1);
-				points.splice(Math.ceil(l));
-				points.push(ndest);
-				actions.splice(Math.ceil(l));
-				actions.push(l);
-			}
-		}
-		addPath(points, actions);
+		const path = txt.match(/(START[\s\S]*END.*\n)/m)?.[1] || txt.match(/(START[\s\S]*\n)/)?.[1];
+		if (path) addPath_lines(path);
 	}
 }
 
