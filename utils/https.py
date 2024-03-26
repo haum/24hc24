@@ -10,6 +10,8 @@ import ssl
 import string
 import sys
 
+from map import Map
+
 def ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
@@ -35,6 +37,8 @@ def route_GET(pattern, fct):
     _route_get.append((re.compile(pattern), fct))
 def route_POST(pattern, fct):
     _route_post.append((re.compile(pattern), fct))
+
+games = {}
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -80,6 +84,36 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             text += f.read()
         self._send_text(text)
 
+    def dyn_playing_api(self, mapfile, gameid):
+        with open(mapsdir + '/' + mapfile, 'r') as f:
+            m = Map(f.read())
+        text = ""
+        start = gameid not in games
+        if start:
+            games[gameid] = (m.startstate, 0)
+            text += f"START {m.Sx} {m.Sy} {m.Sz}\n"
+
+        data = self.rfile.read(int(self.headers['Content-Length'])).decode('utf-8')
+        mp = Map.pathdesc_pattern.match(data)
+        if not mp:
+            moves = games[gameid][0] if gameid in games else 0
+            text += f'END KO {moves}\n'
+            self._send_text(text)
+        Ax, Ay, Az = map(int, mp.groups())
+
+        result = m.analyze_path_step(games[gameid][0], Ax, Ay, Az)
+        text += f'ACC {Ax} {Ay} {Az}\n'
+        if isinstance(result, Map.State):
+            games[gameid] = (result, games[gameid][1]+1)
+            self._send_text(text)
+        else:
+            ok, submoves, msg = result
+            moves = games[gameid][1] + submoves
+            kook = 'OK' if ok else 'KO'
+            text += f'END {kook} {moves}\n'
+            del games[gameid]
+            self._send_text(text)
+
     def do_GET(self):
         for p, f in _route_get:
             m = p.match(self.path)
@@ -103,6 +137,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 route_GET(r"^/$", Handler.dyn_index)
 route_GET(r"^/playmaps/(.+)$", Handler.dyn_playmaps)
 route_GET(r"^/index.htm$", lambda s: s._redirect301('/'))
+route_POST(r"^/api/playing/([^/]+)/(.+)$", Handler.dyn_playing_api)
 
 with socketserver.TCPServer(("", port), Handler) as httpd:
     print(f'https://{ip()}:{port}/')
