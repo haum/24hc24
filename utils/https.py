@@ -52,7 +52,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-type", ctype)
         self.end_headers()
-        self.wfile.write(text.encode('utf-8'));
+        self.wfile.write(text.encode('utf-8'))
 
     def dyn_index(self):
         with open(httpdir + '/index.htm', 'r') as f:
