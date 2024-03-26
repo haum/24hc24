@@ -6,6 +6,7 @@ let scene, background, lights, camera, renderer, controls, stereofx, modecombo, 
 let CUBESZ = 0.1;
 let stereorender = true;
 const world = new THREE.Group();
+const raycaster = new THREE.Raycaster();
 const cube_types = [
 	new THREE.MeshLambertMaterial({ color: 0x333333, transparent: true, opacity: 0.8 }), // Goals
 	new THREE.MeshLambertMaterial({ color: 0x0066d4, transparent: true, opacity: 0.8 }), // Asteroids
@@ -231,7 +232,26 @@ function addPath_line_START(px, py, pz) {
 	path_spheres.splice(0, path_spheres.length);
 	path_spheres.push(sphere);
 
-	if (playable_url) playbtns.visible = true;
+	if (playable_url) {
+		if (playbtns) world.remove(playbtns);
+		playbtns = new THREE.Group()
+		const playbtn_material = new THREE.MeshBasicMaterial({ color: 0xaa00ff, transparent: true, opacity: 0.5 });
+		const playbtn_geometry = new THREE.BoxGeometry(CUBESZ/10, CUBESZ/10, CUBESZ/10);
+		for (let i of [-1, 0, 1]) for (let j of [-1, 0, 1]) for (let k of [-1, 0, 1]) {
+			const playbtn = new THREE.Mesh(playbtn_geometry, playbtn_material);
+			playbtn.position.set(i * CUBESZ, j * CUBESZ, k * CUBESZ);
+			playbtn.userData.onclick = () => {
+				if (!playbtns.visible) return;
+				playbtns.visible = false;
+				play(i, j, k).then(() => { if (playable_url) playbtns.visible = true; });
+			};
+			playbtns.add(playbtn);
+		}
+		world.add(playbtns);
+
+		playbtns.position.add(sphere.position);
+		playbtns.visible = !stereorender;
+	}
 }
 function addPath_line_ACC(ax, ay, az) {
 	pathdata.vx += ax;
@@ -248,6 +268,9 @@ function addPath_line_ACC(ax, ay, az) {
 	sphere.position.set(q.wx, q.wy, q.wz);
 	world.add(sphere);
 	path_spheres.push(sphere);
+
+	const qb = coord_xyz_w(pathdata.px + pathdata.vx, pathdata.py + pathdata.vy, pathdata.pz + pathdata.vz);
+	playbtns.position.set(qb.wx, qb.wy, qb.wz);
 }
 function addPath_line_END(ok, moves) {
 	const last_i = Math.floor(moves) + 1;
@@ -564,6 +587,22 @@ export function init() {
 		controls.handleResize();
 	});
 
+	renderer.domElement.addEventListener('click', e => {
+		if (stereorender) return;
+		const raycast_pointer = new THREE.Vector2();
+		raycast_pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+		raycast_pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+		raycaster.setFromCamera(raycast_pointer, camera);
+
+		const intersects = raycaster.intersectObjects(playbtns.children, false);
+		for (let it of intersects) {
+			if ('onclick' in it.object.userData) {
+				it.object.userData.onclick(it);
+				break;
+			}
+		}
+	});
+
 	document.body.appendChild(renderer.domElement);
 	controls.handleResize();
 
@@ -587,37 +626,6 @@ export function init() {
 		reader.readAsArrayBuffer(file);
 		return false;
 	};
-
-	const div_play = document.createElement('div');
-	Object.defineProperty(div_play, "visible", {
-		get: function () {
-			return this.visible_v;
-		},
-		set: function (v) {
-			this.visible_v = v;
-			this.style.display = v ? 'block' : 'none';
-		},
-		enumerable: true,
-		configurable: true,
-	});
-	for (let i of [-1, 0, 1]) for (let j of [-1, 0, 1]) for (let k of [-1, 0, 1]) {
-		const btn_play = document.createElement('button');
-		btn_play.innerText = i + " " + j + " " + k;
-		btn_play.style.width = '80px';
-		btn_play.style.height = '40px';
-		btn_play.style.position = 'absolute';
-		btn_play.style.bottom = ((j+1) * 40) + 'px';
-		btn_play.style.left = ((i+1)*80 + (k+1)*(3*80+20)) + 'px';
-		btn_play.addEventListener('click', (e) => {
-			e.stopPropagation();
-			div_play.visible = false;
-			play(i, j, k).then(() => { if (playable_url) div_play.visible = true; });
-		});
-		div_play.appendChild(btn_play);
-	}
-	overlay.appendChild(div_play);
-	playbtns = div_play;
-	playbtns.visible = false;
 
 	renderer.setAnimationLoop(render);
 }
