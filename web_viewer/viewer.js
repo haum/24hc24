@@ -259,7 +259,8 @@ export function parseLogTxt(txt) {
 
 	// Grid size
 	{
-		const map = txt.match(/MAP[^\n]+\n/)[0]?.split(/\s+/);
+		const map = txt.match(/MAP[^\n]+\n/)?.[0]?.split(/\s+/);
+		if (!map) return;
 		gridSize = { x: parseInt(map[1]), y: parseInt(map[2]), z: parseInt(map[3]) };
 		CUBESZ = 1 / Math.max(gridSize.x, gridSize.y, gridSize.z);
 	}
