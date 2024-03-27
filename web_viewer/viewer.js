@@ -525,8 +525,9 @@ export function init() {
 			overlay.style.display = (overlay.style.display == 'none') ? 'block' : 'none';
 	});
 
+	const xr_opts = { optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking'] };
 	const btn_vr = document.createElement('button');
-	if ('xr' in navigator) navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
+	if ('xr' in navigator) navigator.xr.isSessionSupported('immersive-vr', xr_opts).then((supported) => {
 		if (!supported) return;
 		btn_vr.innerText = "VR"
 		btn_vr.style.width = '100px';
@@ -537,7 +538,7 @@ export function init() {
 		btn_vr.addEventListener('click', (e) => {
 			e.stopPropagation();
 			if (!renderer.xr.isPresenting) {
-				navigator.xr.requestSession('immersive-vr').then((s) => {
+				navigator.xr.requestSession('immersive-vr', xr_opts).then((s) => {
 					renderer.xr.setSession(s);
 				});
 			} else {
@@ -548,7 +549,7 @@ export function init() {
 	});
 
 	const btn_ar = document.createElement('button');
-	if ('xr' in navigator) navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
+	if ('xr' in navigator) navigator.xr.isSessionSupported('immersive-ar', xr_opts).then((supported) => {
 		if (!supported) return;
 		btn_ar.innerText = "AR"
 		btn_ar.style.width = '100px';
@@ -559,7 +560,7 @@ export function init() {
 		btn_ar.addEventListener('click', (e) => {
 			e.stopPropagation();
 			if (!renderer.xr.isPresenting) {
-				navigator.xr.requestSession('immersive-ar').then((s) => {
+				navigator.xr.requestSession('immersive-ar', xr_opts).then((s) => {
 					renderer.xr.setSession(s);
 				});
 			} else {
@@ -577,20 +578,22 @@ export function init() {
 		btn_vr.innerText = 'Stop';
 		btn_ar.innerText = 'Stop';
 
-		for (let i = 0; i < 5; i++) {
+		for (let i = 0; i < 2; i++) {
 			const pointer = renderer.xr.getController(i);
-			if (!pointer) continue;
-			xr_pointers.push(pointer);
-			scene.add(pointer);
+			const hand = renderer.xr.getHand(i);
 
 			pointer.addEventListener('connected', e => {
-				if (e.data.profiles && e.data.profiles.length != 0) {
-					const ray_geometry = new THREE.BufferGeometry();
-					ray_geometry.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 0, 0, -1], 3));
-					const ray = new THREE.Line(ray_geometry, xr_ray_material);
-					ray.scale.setScalar(0.05);
-					pointer.add(ray);
-				}
+				const ray_geometry = new THREE.BufferGeometry();
+				ray_geometry.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 0, 0, -1], 3));
+				const ray = new THREE.Line(ray_geometry, xr_ray_material);
+				ray.scale.setScalar(0.05);
+				pointer.add(ray);
+				xr_pointers.push(pointer);
+				scene.add(pointer);
+			});
+			pointer.addEventListener('disconnected', e => {
+				scene.remove(pointer);
+				xr_pointers.splice(xr_pointers.indexOf(pointer), 1);
 			});
 			pointer.addEventListener('selectstart', () => {
 				raycaster_matrix.identity().extractRotation(pointer.matrixWorld);
