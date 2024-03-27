@@ -20,6 +20,7 @@ def bruteforce_solve(m, stop_at_first=False, progress=False):
         count = 0
         while toexplore:
             state = toexplore.pop()
+            if finalstateinfo and infos[state].moves > finalstateinfo.moves: continue
             count += 1
             if progress:
                 if count & 0xfff == 0:
