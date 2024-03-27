@@ -578,6 +578,8 @@ export function init() {
 		btn_vr.innerText = 'Stop';
 		btn_ar.innerText = 'Stop';
 
+		if (playable_url) playbtns.visible = true;
+
 		for (let i = 0; i < 2; i++) {
 			const pointer = renderer.xr.getController(i);
 			const hand = renderer.xr.getHand(i);
@@ -625,6 +627,8 @@ export function init() {
 		scene.background = xr_prev_bg;
 		btn_vr.innerText = 'VR';
 		btn_ar.innerText = 'AR';
+
+		if (!playable_url || stereorender) playbtns.visible = false;
 
 		for (let pointer of xr_pointers) {
 			scene.remove(pointer);
