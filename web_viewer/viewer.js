@@ -270,7 +270,7 @@ function addPath_line_ACC(ax, ay, az) {
 	path_spheres.push(sphere);
 
 	const qb = coord_xyz_w(pathdata.px + pathdata.vx, pathdata.py + pathdata.vy, pathdata.pz + pathdata.vz);
-	playbtns.position.set(qb.wx, qb.wy, qb.wz);
+	if (playbtns) playbtns.position.set(qb.wx, qb.wy, qb.wz);
 }
 function addPath_line_END(ok, moves) {
 	const last_i = Math.floor(moves) + 1;
@@ -290,7 +290,7 @@ function addPath_line_END(ok, moves) {
 	}
 	pathdata.moves = moves;
 	playable_url = null;
-	playbtns.visible = false;
+	if (playbtns) playbtns.visible = false;
 }
 function addPath_lines(txt) {
 	const lines = txt.match(/.*\n/g) || [];
@@ -576,7 +576,7 @@ export function init() {
 		btn_vr.innerText = 'Stop';
 		btn_ar.innerText = 'Stop';
 
-		if (playable_url) playbtns.visible = true;
+		if (playable_url && playbtns) playbtns.visible = true;
 
 		for (let i = 0; i < 2; i++) {
 			const pointer = renderer.xr.getController(i);
@@ -600,12 +600,14 @@ export function init() {
 				raycaster.ray.origin.setFromMatrixPosition(pointer.matrixWorld);
 				raycaster.ray.direction.set(0, 0, -1).applyMatrix4(raycaster_matrix);
 				let clicked = false;
-				const intersects = raycaster.intersectObjects(playbtns.children, false);
-				for (let it of intersects) {
-					if ('onclick' in it.object.userData) {
-						clicked = true;
-						it.object.userData.onclick(it);
-						break;
+				if (playbtns && playbtns.visible) {
+					const intersects = raycaster.intersectObjects(playbtns.children, false);
+					for (let it of intersects) {
+						if ('onclick' in it.object.userData) {
+							clicked = true;
+							it.object.userData.onclick(it);
+							break;
+						}
 					}
 				}
 				if (!clicked) pointer.attach(world);
@@ -626,7 +628,7 @@ export function init() {
 		btn_vr.innerText = 'VR';
 		btn_ar.innerText = 'AR';
 
-		if (!playable_url || stereorender) playbtns.visible = false;
+		if (playbtns && (!playable_url || stereorender)) playbtns.visible = false;
 
 		for (let pointer of xr_pointers) {
 			scene.remove(pointer);
@@ -648,11 +650,13 @@ export function init() {
 		raycast_pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
 		raycaster.setFromCamera(raycast_pointer, camera);
 
-		const intersects = raycaster.intersectObjects(playbtns.children, false);
-		for (let it of intersects) {
-			if ('onclick' in it.object.userData) {
-				it.object.userData.onclick(it);
-				break;
+		if (playbtns && playbtns.visible) {
+			const intersects = raycaster.intersectObjects(playbtns.children, false);
+			for (let it of intersects) {
+				if ('onclick' in it.object.userData) {
+					it.object.userData.onclick(it);
+					break;
+				}
 			}
 		}
 	});
@@ -698,7 +702,7 @@ function render(time) {
 		raycaster.ray.origin.setFromMatrixPosition(pointer.matrixWorld);
 		raycaster.ray.direction.set(0, 0, -1).applyMatrix4(raycaster_matrix);
 		let found = false;
-		if (playbtns.visible) {
+		if (playbtns && playbtns.visible) {
 			const intersects = raycaster.intersectObjects(playbtns.children, false);
 			for (let it of intersects) {
 				found = true;
