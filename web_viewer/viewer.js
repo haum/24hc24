@@ -183,13 +183,11 @@ function addCube(i, t, px, py, pz, mx, my, mz) {
 	cube.position.y = p.wy + (sy - my/3 * CUBESZ)/2;
 	cube.position.z = p.wz + (sz - mz/3 * CUBESZ)/2;
 	cube.renderOrder = 1;
-	cube.animation = animations[2*t];
 	world.add(cube);
 
 	const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), line_types[t]);
 	edges.computeLineDistances();
 	edges.position.add(cube.position);
-	edges.animation = animations[2*t+1];
 	world.add(edges);
 }
 
@@ -439,20 +437,20 @@ async function play(Ax, Ay, Az) {
 }
 
 function animWall(opacityMin, opacityMax, duration) {
-	return (obj, t) => {
+	return (material, t) => {
 		let tt = (t % (1000*duration))/(1000*duration);
 		if (tt > 0.5) tt = 1 - tt;
 		tt *= 2;
-		obj.material.opacity = opacityMin + tt * (opacityMax - opacityMin);
+		material.opacity = opacityMin + tt * (opacityMax - opacityMin);
 	}
 }
 
 function animCheckpoint(nr, duration) {
-	return (obj, t) => {
+	return (material, t) => {
 		let tt = (t % (1000*duration))/(1000*duration);
 		const step = Math.round(tt/0.2);
-		if (step == nr) obj.material.opacity = 0.8;
-		else obj.material.opacity = 0.1;
+		if (step == nr) material.opacity = 0.8;
+		else material.opacity = 0.1;
 	}
 }
 
@@ -688,7 +686,11 @@ export function init() {
 
 function render(time) {
 	controls.update(time);
-	for (const o of world.children) if (o.animation) o.animation(o, time);
+	for (let i in animations) {
+		const a = animations[i];
+		const ii = Math.floor(i/2);
+		if (a) a(i % 2 ? line_types[ii] : cube_types[ii], time);
+	}
 	if (path_line) path_line.material.uniforms.t.value = time;
 	for (let pointer of xr_pointers) {
 		if (pointer.children.length == 0) continue;
