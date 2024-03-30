@@ -21,7 +21,7 @@ from django.urls import include, path
 from serv.views import index, ListGamesView, show_game
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('poseidon/', admin.site.urls),
     path('', index, name='index'),
     path('viewer/', TemplateView.as_view(template_name='viewer.html'), name='viewer'),
     path('games/', ListGamesView.as_view(), name='games_list'),
