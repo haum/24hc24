@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-q*69jo6mahy2*_h+pgt)_4&m04x77o4uuky-psdrlvywbjkzl)
 DEBUG = not is_production
 
 ALLOWED_HOSTS = ['odysseehaumere.haum.org', '24hc24.haum.org'] if is_production else ["*"]
-
+CSRF_TRUSTED_ORIGINS = ['https://' + host for host in ALLOWED_HOSTS]
 
 # Application definition
 
