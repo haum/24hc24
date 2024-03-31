@@ -155,7 +155,7 @@ class ScoreGameView(APIView):
     def post(self, request, stage_endpoint=None):
         referee = request.user
         game_id = request.data.get('game_id')
-        score = request.data.get('score')
+        score = float(request.data.get('score'))
 
         try:
             game = Game.objects.get(pk=game_id)
