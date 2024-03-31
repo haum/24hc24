@@ -32,7 +32,6 @@ class NewMapView(APIView):
 
     def post(self, request, stage_endpoint=None):
         map_data = request.data.get('map')
-        # stage_endpoint = request.data.get('stage')
         if stage_endpoint is not None:
             try:
                 stage = Stage.objects.get(endpoint=stage_endpoint)
