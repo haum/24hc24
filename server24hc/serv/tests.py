@@ -4,7 +4,7 @@ import random
 
 from django.urls import reverse
 from rest_framework.authtoken.models import Token
-from .models import Map, Game, Stage, Score
+from .models import Team, Map, Game, Stage, Score
 
 @pytest.fixture
 def test_password():
@@ -395,3 +395,186 @@ class TestScoringMechanics:
         response = api_client.post('/api/score/', {'game_id': self.game.id, 'score': 1})
         assert response.status_code == 403, response.data
         assert response.data['message'] == 'This game has already been scored'
+
+@pytest.mark.only
+class TestTeamScoreComputation:
+    def test_simple_scores(self, create_user):
+        user1 = create_user()
+        team1 = Team(user=user1)
+        team1.save()
+        user2 = create_user()
+        team2 = Team(user=user2)
+        team2.save()
+
+        stage1 = Stage(endpoint='test_scoring')
+        stage1.save()
+
+        map11 = Map(map_data='', proposed_by=user1)
+        map11.save()
+        map12 = Map(map_data='', proposed_by=user1)
+        map12.save()
+        map21 = Map(map_data='', proposed_by=user2)
+        map21.save()
+        map22 = Map(map_data='', proposed_by=user2)
+        map22.save()
+
+        stage1.maps.add(map11)
+        stage1.maps.add(map12)
+        stage1.maps.add(map21)
+        stage1.maps.add(map22)
+
+        g1_11 = Game(map=map11, player=user1, stage=stage1, victory=True, finished=True, reference_score=3)
+        g1_12 = Game(map=map12, player=user1, stage=stage1, victory=True, finished=True, reference_score=3)
+        g1_21 = Game(map=map21, player=user1, stage=stage1, victory=True, finished=True, reference_score=3)
+        g1_22 = Game(map=map22, player=user1, stage=stage1, victory=True, finished=True, reference_score=3)
+        g1_11.save()
+        g1_12.save()
+        g1_21.save()
+        g1_22.save()
+
+
+        g2_11 = Game(map=map11, player=user2, stage=stage1, victory=True, finished=True, reference_score=4)
+        g2_12 = Game(map=map12, player=user2, stage=stage1, victory=True, finished=True, reference_score=4)
+        g2_21 = Game(map=map21, player=user2, stage=stage1, victory=True, finished=True, reference_score=4)
+        g2_22 = Game(map=map22, player=user2, stage=stage1, victory=True, finished=True, reference_score=4)
+        g2_11.save()
+        g2_12.save()
+        g2_21.save()
+        g2_22.save()
+
+        Score(game=g1_11, referee=user1, score=3, valid=True).save()
+        Score(game=g1_12, referee=user1, score=3, valid=True).save()
+        Score(game=g2_11, referee=user1, score=4, valid=True).save()
+        Score(game=g2_12, referee=user1, score=4, valid=True).save()
+
+        Score(game=g1_21, referee=user2, score=3, valid=True).save()
+        Score(game=g1_22, referee=user2, score=3, valid=True).save()
+        Score(game=g2_21, referee=user2, score=4, valid=True).save()
+        Score(game=g2_22, referee=user2, score=4, valid=True).save()
+
+        assert team1.score_player == 0
+        assert team2.score_player == 4
+        assert team1.score_game == 4
+        assert team2.score_game == 4
+
+    def test_one_wrond_score(self, create_user):
+        user1 = create_user()
+        team1 = Team(user=user1)
+        team1.save()
+
+        stage1 = Stage(endpoint='test_scoring')
+        stage1.save()
+
+        map11 = Map(map_data='', proposed_by=user1)
+        map11.save()
+        map12 = Map(map_data='', proposed_by=user1)
+        map12.save()
+
+        stage1.maps.add(map11)
+        stage1.maps.add(map12)
+
+        g1_11 = Game(map=map11, player=user1, stage=stage1, victory=True, finished=True, reference_score=3)
+        g1_12 = Game(map=map12, player=user1, stage=stage1, victory=True, finished=True, reference_score=3)
+        g1_11.save()
+        g1_12.save()
+
+        Score(game=g1_11, referee=user1, score=3, valid=True).save()
+        Score(game=g1_12, referee=user1, score=4, valid=True).save()
+
+
+        assert team1.score_player == 0
+        assert team1.score_game == 2+10
+
+    def test_several_wrong_games_one_map(self, create_user):
+        user1 = create_user()
+        team1 = Team(user=user1)
+        team1.save()
+        user2 = create_user()
+        team2 = Team(user=user2)
+        team2.save()
+
+        stage1 = Stage(endpoint='test_scoring')
+        stage1.save()
+
+        map11 = Map(map_data='', proposed_by=user1)
+        map11.save()
+        map12 = Map(map_data='', proposed_by=user1)
+        map12.save()
+
+        stage1.maps.add(map11)
+        stage1.maps.add(map12)
+
+        g1_11 = Game(map=map11, player=user1, stage=stage1, victory=True, finished=True, reference_score=3)
+        g1_12 = Game(map=map12, player=user1, stage=stage1, victory=True, finished=True, reference_score=3)
+        g1_11.save()
+        g1_12.save()
+
+        g2_11 = Game(map=map11, player=user2, stage=stage1, victory=True, finished=True, reference_score=4)
+        g2_11.save()
+
+        Score(game=g1_11, referee=user1, score=2, valid=True).save()
+        Score(game=g1_12, referee=user1, score=3, valid=True).save()
+        Score(game=g2_11, referee=user1, score=2, valid=True).save()
+
+        assert team1.score_player == 0
+        assert team2.score_player == 1
+        assert team1.score_game == 3+10
+
+    def test_non_resolvent(self, create_user):
+        user1 = create_user()
+        team1 = Team(user=user1)
+        team1.save()
+        user2 = create_user()
+        team2 = Team(user=user2)
+        team2.save()
+
+        stage1 = Stage(endpoint='test_scoring')
+        stage1.save()
+
+        map11 = Map(map_data='', proposed_by=user1)
+        map11.save()
+        map12 = Map(map_data='', proposed_by=user1)
+        map12.save()
+        map21 = Map(map_data='', proposed_by=user2)
+        map21.save()
+        map22 = Map(map_data='', proposed_by=user2)
+        map22.save()
+
+        stage1.maps.add(map11)
+        stage1.maps.add(map12)
+        stage1.maps.add(map21)
+        stage1.maps.add(map22)
+
+        g1_11 = Game(map=map11, player=user1, stage=stage1, victory=True, finished=True, reference_score=3)
+        g1_12 = Game(map=map12, player=user1, stage=stage1, victory=True, finished=True, reference_score=3)
+        g1_21 = Game(map=map21, player=user1, stage=stage1, victory=True, finished=True, reference_score=3)
+        g1_22 = Game(map=map22, player=user1, stage=stage1, victory=True, finished=True, reference_score=3)
+        g1_11.save()
+        g1_12.save()
+        g1_21.save()
+        g1_22.save()
+
+
+        g2_11 = Game(map=map11, player=user2, stage=stage1, victory=True, finished=True, reference_score=4)
+        g2_12 = Game(map=map12, player=user2, stage=stage1, victory=True, finished=True, reference_score=4)
+        g2_21 = Game(map=map21, player=user2, stage=stage1, victory=True, finished=True, reference_score=4)
+        g2_22 = Game(map=map22, player=user2, stage=stage1, victory=False, finished=True, reference_score=4)
+        g2_11.save()
+        g2_12.save()
+        g2_21.save()
+        g2_22.save()
+
+        Score(game=g1_11, referee=user1, score=3, valid=True).save()
+        Score(game=g1_12, referee=user1, score=3, valid=True).save()
+        Score(game=g2_11, referee=user1, score=4, valid=True).save()
+        Score(game=g2_12, referee=user1, score=4, valid=True).save()
+
+        Score(game=g1_21, referee=user2, score=3, valid=True).save()
+        Score(game=g1_22, referee=user2, score=3, valid=True).save()
+        Score(game=g2_21, referee=user2, score=4, valid=True).save()
+        Score(game=g2_22, referee=user2, score=4, valid=True).save()
+
+        assert team1.score_player == 0
+        assert team2.score_player == 3+5
+        assert team1.score_game == 4
+        assert team2.score_game == 3
