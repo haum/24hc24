@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="40mm"
+   height="56mm"
+   viewBox="0 0 40 56"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25, custom)"
+   sodipodi:docname="raiser.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#bebebe"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="true"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:showpageshadow="0"
+     inkscape:deskcolor="#d1d1d1"
+     showguides="true"
+     inkscape:zoom="2.9655026"
+     inkscape:cx="29.168749"
+     inkscape:cy="115.83197"
+     inkscape:window-width="1918"
+     inkscape:window-height="1055"
+     inkscape:window-x="0"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <sodipodi:guide
+       position="2,-150.12231"
+       orientation="-1,0"
+       id="guide1"
+       inkscape:locked="false"
+       inkscape:label=""
+       inkscape:color="rgb(0,134,229)" />
+    <sodipodi:guide
+       position="0.1763885,67.323614"
+       orientation="0,1"
+       id="guide2"
+       inkscape:locked="false"
+       inkscape:label=""
+       inkscape:color="rgb(0,134,229)" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2">
+			
+			
+		</defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0.1763885,-261.276)">
+    <rect
+       style="color:#000000;overflow:visible;opacity:1;fill:none;fill-opacity:1;stroke:#ff0000;stroke-width:0.352777;stroke-opacity:1"
+       id="rect1"
+       width="39.647224"
+       height="55.647224"
+       x="0"
+       y="261.45239" />
+    <g
+       id="g3"
+       transform="matrix(0.00550459,0,0,0.00550459,16.669244,271.85508)"
+       style="stroke-width:48.066">
+      <g
+         id="g2-3"
+         transform="matrix(10.000001,0,0,10.000001,-3638.9553,-3590.6554)"
+         style="stroke-width:48.066">
+			<path
+   d="m 401.1,288.9 h 20.4 v 20.8 h -20.4 z m -12,-12 v 44.8 h 39.2 l 5.2,-5.2 v -34.3 l -5.2,-5.2 h -39.2 z m 82.8,0 v 32.8 h -20.6 v -32.8 h -12 v 39.6 l 5.2,5.2 h 34.2 l 5.2,-5.2 v -39.6 z m 104.9,12 h 20.5 v 20.8 h -20.5 z m -6.8,-12 -5.2,5.2 v 34.3 l 5.2,5.2 h 34.1 l 5.2,-5.2 v -34.3 l -5.2,-5.2 z m 57.1,12 h 20.4 v 20.8 h -20.4 z m -12,-12 v 44.8 h 39.2 l 5.2,-5.2 v -34.3 l -5.2,-5.2 h -39.2 z m 55.4,0 -5.2,5.2 v 34.3 l 5.2,5.2 h 39.2 v -12 h -32.4 v -4.4 h 32.5 v -12 h -32.5 v -4.4 h 32.4 v -12 h -39.2 z m -150.7,0 -5.2,5.2 v 34.3 l 5.2,5.2 H 559 v -12 H 526.6 V 288.8 H 559 V 276.7 Z M 94.2,215.5 v 44.2 h 79.6 v 16.1 h -60.5 l -19.1,19.1 v 85.4 H 218 V 336 h -79.6 v -16 h 60.3 L 218,300.7 v -65.9 l -19.3,-19.3 z m 225.2,0 v 60.3 h -36.6 v -60.3 h -44.2 v 85.2 l 19.1,19.3 h 61.7 v 60.3 h 44 V 215.5 Z m 105.3,0 v 17.7 h -22.3 v -17.7 h -13 V 264 h 13 v -17.7 h 22.3 V 264 h 12.9 v -48.5 z m 24.8,0 -5.6,5.7 v 37.1 l 5.6,5.7 h 42.4 v -13 h -35.1 v -4.7 H 492 v -13 h -35.1 v -4.7 H 492 v -13 h -42.5 z m 84.1,0 V 251 h -22.3 v -35.5 h -13 v 42.8 l 5.6,5.7 h 37 l 5.6,-5.7 v -42.8 z m 32.3,13 h 22.2 v 4.7 h -22.2 z m -13,-13 V 264 h 13 v -17.7 h 22.2 V 264 H 601 v -20.6 l -3.5,-3.6 3.5,-3.6 v -15 l -5.6,-5.7 z m 60.1,0 -5.6,5.7 v 37.1 l 5.6,5.7 h 42.4 v -13 h -35.1 v -4.7 h 35.1 v -13 h -35.1 v -4.7 h 35.1 v -13 H 613 Z m 54.4,0 -5.6,5.7 v 19.4 l 5.6,5.7 h 29.3 v 4.7 h -34.9 v 13 h 42.3 l 5.6,-5.7 v -19.5 l -5.6,-5.6 h -29.3 v -4.7 h 34.9 v -13 z"
+   id="path1-6"
+   style="stroke-width:48.066" />
+
+			<polygon
+   points="671.4,339.5 671.4,360.4 727.3,360.4 748.2,360.4 748.2,283.6 727.3,283.6 727.3,339.5 "
+   id="polygon1-7"
+   style="stroke-width:48.066" />
+
+		</g>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.93909px;line-height:7.05556px;font-family:Effra;-inkscape-font-specification:'Effra Bold';text-align:justify;letter-spacing:0px;word-spacing:0px;fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="19.813734"
+       y="281.42209"
+       id="text3"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444px;line-height:7.05556px;font-family:Impact;-inkscape-font-specification:Impact;text-align:center;letter-spacing:0.264583px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583px"
+         x="19.813734"
+         y="281.42209"
+         id="tspan4">GAGNANT</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;line-height:7.05556px;font-family:Impact;-inkscape-font-specification:Impact;text-align:center;letter-spacing:0.105833px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583px"
+         x="19.86665"
+         y="288.97955"
+         id="tspan5">12<tspan
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;line-height:7.05556px;font-family:Impact;-inkscape-font-specification:Impact;letter-spacing:0.105833px;baseline-shift:super;stroke-width:0.264583px"
+   id="tspan6">ème</tspan> édition</tspan></text>
+  </g>
+</svg>
