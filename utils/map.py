@@ -3,6 +3,7 @@
 
 from collections import namedtuple
 from enum import Enum
+import itertools
 import math
 import re
 
@@ -226,30 +227,26 @@ class Map:
                 return self.PathAnalysis(False, 0, "Invalid acceleration in nebula")
 
         Vx, Vy, Vz = Vx+Ax, Vy+Ay, Vz+Az
-        Px, Py, Pz = Px+Vx, Py+Vy, Pz+Vz
 
-        oou = 1
-        for Vn, Pn, Nn in ((Vx, Px, self.Nx), (Vy, Py, self.Ny), (Vz, Pz, self.Nz)):
-            if Pn < 0: oou = min(oou, (Vn - Pn - 0.5) / Vn)
-            elif Pn >= Nn: oou = min(oou, (Vn - Pn - 0.5 + Nn) / Vn)
-
+        eps = 0.0001
         intersections = []
         for Vn in (Vx, Vy, Vz):
             if Vn:
                 for i in range(6*abs(Vn)+1):
-                    t = 1 - i / abs(Vn) / 6;
-                    Ix, Iy, Iz = Px - t * Vx, Py - t * Vy, Pz - t * Vz
-                    if Ix < 0 or Ix >= self.Nx or \
-                       Iy < 0 or Iy >= self.Ny or \
-                       Iz < 0 or Iz >= self.Nz:
-                        break
-                    Bx, By, Bz = round(Ix), round(Iy), round(Iz)
-                    b = self[Bx, By, Bz]
-                    if b.empty: continue
-                    if Bx - b.mx/6 <= Ix and Ix <= Bx + b.px/6 and \
-                       By - b.my/6 <= Iy and Iy <= By + b.py/6 and \
-                       Bz - b.mz/6 <= Iz and Iz <= Bz + b.pz/6:
-                           intersections.append((b, (1-t)))
+                    t = i / abs(Vn) / 6;
+                    Ix, Iy, Iz = Px + t * Vx, Py + t * Vy, Pz + t * Vz
+                    bxs = [round(Ix)] if abs((Ix % 1) - 0.5) > 0.1 else [math.floor(Ix), math.ceil(Ix)]
+                    bys = [round(Iy)] if abs((Iy % 1) - 0.5) > 0.1 else [math.floor(Iy), math.ceil(Iy)]
+                    bzs = [round(Iz)] if abs((Iz % 1) - 0.5) > 0.1 else [math.floor(Iz), math.ceil(Iz)]
+                    for Bx, By, Bz in itertools.product(bxs, bys, bzs):
+                        b = self[Bx, By, Bz]
+                        if b.empty: continue
+                        if Bx - b.mx/6 - eps <= Ix and Ix <= Bx + b.px/6 + eps and \
+                           By - b.my/6 - eps <= Iy and Iy <= By + b.py/6 + eps and \
+                           Bz - b.mz/6 - eps <= Iz and Iz <= Bz + b.pz/6 + eps:
+                               intersections.append((b, t))
+
+        Px, Py, Pz = Px+Vx, Py+Vy, Pz+Vz
 
         for bc, submoves in sorted(intersections, key=lambda n: n[1]):
             if bc.bt == self.BlockType.GOAL:
@@ -257,7 +254,11 @@ class Map:
                     if checkpoint == self.maxcp:
                         return self.PathAnalysis(True, submoves, "Victory")
             elif bc.bt == self.BlockType.ASTEROID:
-                return self.PathAnalysis(False, submoves, "Collision")
+                msg = "Collision"
+                for Pn, Vn, Nn in ((Px, Vx, self.Nx), (Py, Vy, self.Ny), (Pz, Vz, self.Nz)):
+                    In = Pn - (1-t) * Vn
+                    if In < 0 or In >= Nn: msg = "Out of the universe"
+                return self.PathAnalysis(False, submoves, msg)
             elif bc.bt == self.BlockType.CP1:
                 if checkpoint == 0: checkpoint += 1
             elif bc.bt == self.BlockType.CP2:
@@ -267,8 +268,6 @@ class Map:
             elif bc.bt == self.BlockType.CP4:
                 if checkpoint == 3: checkpoint += 1
 
-        if oou < 1:
-            return self.PathAnalysis(False, oou, "Out of the universe")
         return Map.State(Px, Py, Pz, Vx, Vy, Vz, checkpoint)
 
 
