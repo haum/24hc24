@@ -15,7 +15,7 @@ def index(request):
 
 def show_game(request, pk):
     game = Game.objects.get(pk=pk)
-    return HttpResponse(game.map.map_data+'\n'+game.moves + f'\nEND {"OK" if game.victory else "NOK"} {self.reference_score}', content_type="text/plain")
+    return HttpResponse(game.map.map_data+'\n'+game.moves + f'\nEND {"OK" if game.victory else "NOK"} {game.reference_score}\n', content_type="text/plain")
 
 class ListGamesView(ListView):
     model = Game
