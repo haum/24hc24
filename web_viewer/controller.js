@@ -8,7 +8,7 @@ export class ViewerControls {
 		this.dom = dom;
 
 		this.trackball = new TrackballControls(camera, dom);
-		this.trackball.target = obj.position;
+		this.trackball.target = obj.position.clone();
 		this.trackball.rotateSpeed = 1.0;
 		this.trackball.zoomSpeed = 1.0;
 		this.trackball.panSpeed = 0.1;
