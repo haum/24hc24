@@ -473,7 +473,7 @@ export function init() {
 	world.position.set(0, 0, -1);
 
 	const loader = new THREE.TextureLoader();
-	background = loader.load('bg.webp');
+	background = loader.load('/static/viewer/bg.webp');
 	background.colorSpace = THREE.SRGBColorSpace;
 
 	lights = [];
