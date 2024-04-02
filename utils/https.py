@@ -114,6 +114,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             del games[gameid]
             self._send_text(text)
 
+    def img_bg(self):
+        self.path = '/bg.webp'
+        super().do_GET()
+
     def do_GET(self):
         for p, f in _route_get:
             m = p.match(self.path)
@@ -135,6 +139,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             super().do_POST()
 
 route_GET(r"^/$", Handler.dyn_index)
+route_GET(r"^/static/viewer/bg.webp$", Handler.img_bg)
 route_GET(r"^/playmaps/(.+)$", Handler.dyn_playmaps)
 route_GET(r"^/index.htm$", lambda s: s._redirect301('/'))
 route_POST(r"^/api/playing/([^/]+)/(.+)$", Handler.dyn_playing_api)
