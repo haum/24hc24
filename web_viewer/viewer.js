@@ -401,7 +401,7 @@ export function parseLogTxt(txt) {
 
 	// Decode grid
 	{
-		const grid = txt.match(/MAP.*\n([\s\S]*)ENDMAP/m)[1]?.replaceAll(/[^A-Za-z0-9+\/]+/g, '')?.match(/.{3}/g) || [];
+		const grid = txt.match(/MAP.*\n([\s\S]*)\nENDMAP\n/m)?.[1]?.replaceAll(/[^A-Za-z0-9+\/]+/g, '')?.match(/.{3}/g) || [];
 		for (const [i, v] of grid.entries()) {
 			if (v == 'AAA') continue;
 			const nb = b64_atoi(v);
