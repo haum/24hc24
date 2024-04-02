@@ -28,12 +28,15 @@ header h1 {
 	text-align: center;
 }
 
+a {
+	color: #ffc;
+}
+
 #leaderboard {
 	width: 100%;
 }
 
 #leaderboard a {
-	color: white;
 	display: block;
 }
 
