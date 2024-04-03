@@ -348,7 +348,7 @@ class TestScoringMechanics:
         response = api_client.get('/api/score/')
         assert response.status_code == 200, response.data
         assert response.data['game_id'] == self.game.id
-        assert response.data['map'] == self.map.map_data
+        assert response.data['map_data'] == self.map.map_data
         assert response.data['moves'] == self.game.moves
 
         response = api_client.post('/api/score/', {'game_id': response.data['game_id'], 'score': 1})
@@ -360,7 +360,7 @@ class TestScoringMechanics:
         response = api_client.get(f'/api/score/{self.stage.endpoint}')
         assert response.status_code == 200, response.data
         assert response.data['game_id'] == self.game.id
-        assert response.data['map'] == self.map.map_data
+        assert response.data['map_data'] == self.map.map_data
         assert response.data['moves'] == self.game.moves
 
         response = api_client.post('/api/score/', {'game_id': response.data['game_id'], 'score': 1})

@@ -26,7 +26,7 @@ class ListGamesView(ListView):
 class TokenTestView(APIView):
 
     def post(self, request):
-        return Response({'message': 'Token is valid'})
+        return Response({'status': 'success', 'message': 'Token is valid'})
 
 class NewMapView(APIView):
 
@@ -57,7 +57,7 @@ class NewMapView(APIView):
 
             if stage_endpoint is not None:
                 stage.maps.add(map_obj)
-            return Response({'status': 'success'})
+            return Response({'status': 'success', 'message': 'Map created'})
         else:
             return Response(
                 {'status': 'error', 'message': 'Invalid map', 'map_error': errors},
@@ -104,7 +104,7 @@ class NewGameView(APIView):
                 player=request.user
             )
             game.save()
-        return Response({'status': 'success', 'game_id': game.id})
+        return Response({'status': 'success', 'game_id': game.id, 'map_data': game.map.map_data})
 
 class ProposeSolutionView(APIView):
     def post(self, request, game_id):
@@ -146,10 +146,10 @@ class ScoreGameView(APIView):
                     status=status.HTTP_404_NOT_FOUND
                 )
             game = Game.objects.filter(map__proposed_by=referee, stage=stage, score=None, finished=True).order_by('?').first()
-            return Response({'game_id': game.id, 'map': game.map.map_data, 'moves': game.moves, 'stage': stage.endpoint})
+            return Response({'status': 'success', 'game_id': game.id, 'map_data': game.map.map_data, 'moves': game.moves, 'stage': stage.endpoint})
         else:
             game = Game.objects.filter(map__proposed_by=referee, score=None, finished=True).order_by('?').first()
-            return Response({'game_id': game.id, 'map': game.map.map_data, 'moves': game.moves})
+            return Response({'status': 'success', 'game_id': game.id, 'map_data': game.map.map_data, 'moves': game.moves})
 
     def post(self, request, stage_endpoint=None):
         referee = request.user
@@ -191,5 +191,5 @@ class ScoreGameView(APIView):
                 )
         score = Score(game=game, referee=referee, score=score)
         score.save()
-        return Response({'message': 'Score saved'})
+        return Response({'status': 'success', 'message': 'Score saved'})
 
