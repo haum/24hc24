@@ -122,10 +122,14 @@ Retours possibles
 POST /api/score/[stage_endpoint]
 --------------------------------
 
-Infos:
+Infos
+*****
 
 - GET params: 'stage_endpoint' (facultatif)
 - payload: ``{'game_id': int, 'score': float}``
+
+Retours possibles
+*****************
 
 - 404 NOT FOUND: ``{'message': 'No stage named <stage_endpoint> found'}``
 - 400 BAD REQUEST: ``{'message': 'This game does not belong to stage <stage_endpoint>'}``
