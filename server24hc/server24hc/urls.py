@@ -14,9 +14,12 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import os
 from django.contrib import admin
 from django.views.generic import TemplateView
 from django.urls import include, path
+from django.conf.urls.static import static
+from .settings import BASE_DIR
 
 from serv.views import index, ListGamesView, show_game
 
@@ -27,4 +30,4 @@ urlpatterns = [
     path('games/', ListGamesView.as_view(), name='games_list'),
     path('game/<int:pk>', show_game, name='show_game'),
     path('api/', include('serv.urls')),
-]
+] + static('/doc/', document_root=BASE_DIR / '..' / 'doc')
