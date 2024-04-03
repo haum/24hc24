@@ -6,6 +6,5 @@ L'odyssée d'HAUMère
    :maxdepth: 2
    
    intro.rst
-   protocole.rst
    regles.rst
-   wip.rst
+   protocole.rst

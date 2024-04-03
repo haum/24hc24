@@ -4,6 +4,7 @@ Protocole
 Toutes les communications se font avec le serveur du HAUM, et se fera avec une interface REST/JSON.
 Les programmes seront exécutés sur les machines des participants.
 
+Les sauts de ligne attendus sont des \\n. Les autres séparateurs de ligne ont un comportement indéfini.
 
 
 "Le Jeu"
