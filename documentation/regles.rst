@@ -1,4 +1,4 @@
-Regles du jeu
+Règles du jeu
 =============
 
 Blocs
