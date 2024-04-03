@@ -4,25 +4,25 @@ Protocole
 Toutes les communications se font avec le serveur du HAUM, et se fera avec une interface REST/JSON.
 Les programmes seront exécutés sur les machines des participants.
 
-..
 
-   "Le Jeu"
-   --------
 
-   Envoyer la carte
-   """"""""""""""""
+"Le Jeu"
+--------
 
-   Valider les déplacements
-   """"""""""""""""""""""""
+Envoyer la carte
+""""""""""""""""
 
-   "Le Joueur"
-   -----------
+Valider les déplacements
+""""""""""""""""""""""""
 
-   Récupérer la carte
-   """"""""""""""""""
+"Le Joueur"
+-----------
 
-   Envoyer les déplacements
-   """"""""""""""""""""""""
+Récupérer la carte
+""""""""""""""""""
+
+Envoyer les déplacements
+""""""""""""""""""""""""
 
 Informations Générales
 ----------------------
