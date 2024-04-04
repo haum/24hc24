@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<ul>
+    <li><a href='{% url 'games_list' %}'>Games</a></li>
+    <li><a href='{% url 'maps_list' %}'>Maps</a></li>
+</ul>
+
  <table id=leaderboard>
   <tr>
     <th></th>
@@ -11,7 +16,7 @@
   </tr>
 {% for t in teams %}
   <tr>
-    <td><a href=''>{{t.user.username}}</a></td>
+    <td><a href='{% url 'team' t.user.id %}'>{{t.user.username}}</a></td>
     <td>{{t.games_played}}</td>
     <td>{{t.score_player}}</td>
     <td>{{t.score_game}}</td>
