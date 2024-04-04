@@ -64,8 +64,10 @@ class Map(models.Model):
 class Stage(models.Model):
     maps = models.ManyToManyField(Map)
     endpoint = models.CharField(max_length=100, unique=True)
-    time_limit = models.IntegerField(default=None, null=True, blank=True, help_text="Time limit in seconds")
+    end_of_map_submission = models.DateTimeField(default=None, blank=True, null=True)
+    number_of_maps = models.IntegerField(default=-1)
     running = models.BooleanField(default=False)
+    dev = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
