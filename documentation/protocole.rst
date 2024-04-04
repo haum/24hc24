@@ -6,24 +6,25 @@ Les programmes seront exécutés sur les machines des participants.
 
 Les sauts de ligne attendus sont des \\n. Les autres séparateurs de ligne ont un comportement indéfini.
 
+.. 
 
-"Le Jeu"
---------
+   "Le Jeu"
+   --------
 
-Envoyer la carte
-""""""""""""""""
+   Envoyer la carte
+   """"""""""""""""
 
-Valider les déplacements
-""""""""""""""""""""""""
+   Valider les déplacements
+   """"""""""""""""""""""""
 
-"Le Joueur"
------------
+   "Le Joueur"
+   -----------
 
-Récupérer la carte
-""""""""""""""""""
+   Récupérer la carte
+   """"""""""""""""""
 
-Envoyer les déplacements
-""""""""""""""""""""""""
+   Envoyer les déplacements
+   """"""""""""""""""""""""
 
 Informations Générales
 ----------------------
@@ -41,6 +42,8 @@ contient également un rappel du statut dans le champs ``status`` (soit ``succes
 ``error``) ainsi qu'un message dans le champs ``message``. Ces informations vous
 permettent de débugger votre code.
 
+Des informations concernant l'autentification par token sont disponibles sur la `doc du framework utilisé <http://www.django-rest-framework.org/api-guide/authentication/#tokenauthentication>`_.
+
 POST /api/tokentest
 -------------------
 
@@ -53,6 +56,7 @@ Retours possibles
 *****************
 
 - 200: ``{'message': 'Token is valid'}``
+- 401 UNAUTHORIZED
 
 POST /api/map/new/[stage_endpoint]
 ----------------------------------
