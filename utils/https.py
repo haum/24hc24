@@ -66,7 +66,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 "map_list": "",
                 "play_map_list": ""
         }
-        for f in os.listdir(mapsdir):
+        for f in sorted(os.listdir(mapsdir)):
             if os.path.isfile(mapsdir + '/' + f):
                 if f.endswith('.log'):
                     subvars["log_list"] += f'<p><a href="viewer.htm#maps/{f}">{f}</a></p>\n'
