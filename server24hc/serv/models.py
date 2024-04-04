@@ -129,7 +129,8 @@ class Score(models.Model):
     valid = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
-        self.valid = abs(self.score - self.game.reference_score)/self.game.reference_score < 0.01
+        if self.game.reference_score == self.score or abs(self.score - self.game.reference_score)/self.game.reference_score < 0.01:
+            self.valid = True
         super().save(*args, **kwargs)
 
     def __str__(self):
