@@ -24,6 +24,8 @@ Destinations
 
 Atteindre un bloc de destination termine la partie.
 
+La partie se termine dès que le bloc est touché, sans tenir compte de ce qui se trouve sur la suite de la trajectoire.
+
 Astéroïdes
 """"""""""
 
@@ -50,7 +52,7 @@ Sur une carte, les étapes sont forcément ordonnées, sans saut dans la numéro
 Cartes
 ------
 
-Les cartes sont de la forme qui suit :
+Les cartes ont une taille maximale de 25×25×25 blocs et sont de la forme qui suit :
 
 ::
 
@@ -98,3 +100,5 @@ Coups
 
 Le nombre de coups joués est le nombre d'accélérations exécutées par le serveur.
 Si le mouvement se termine prématurément (collision ou franchissement de la destination par exemple), il est compté au prorata du déplacement prévu.
+
+Les arrêtes et faces des blocs comptent comme faisant partie du bloc : frôler, c'est toucher.
