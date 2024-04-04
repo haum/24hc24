@@ -7,7 +7,7 @@ from collections import namedtuple
 from map import Map
 
 def bruteforce_solve(m, stop_at_first=False, progress=False):
-    if not m.valid: return []
+    if not m.valid: return [], 0
 
     StateInfo = namedtuple('StateInfo', 'moves prevstate Ax Ay Az'.split())
     initial_state = Map.State(m.Sx, m.Sy, m.Sz, 0, 0, 0, 0)
