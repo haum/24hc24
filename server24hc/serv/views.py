@@ -1,5 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.utils import timezone
 from django.views.generic.list import ListView
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -50,6 +51,18 @@ class NewMapView(APIView):
                 {'status': 'error', 'message': 'No map data found'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        if stage_endpoint is not None:
+            if stage.number_of_maps > 0 and Map.objects.filter(stage=stage, proposed_by=request.user).count() >= stage.number_of_maps:
+                return Response(
+                    {'status': 'error', 'message': f'No more maps allowed for stage {stage_endpoint}'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            if stage.end_of_map_submission is not None and stage.end_of_map_submission < timezone.now():
+                return Response(
+                    {'status': 'error', 'message': f'End of map submission for stage {stage_endpoint} has passed'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
         map_obj = Map(map_data=map_data, proposed_by=request.user)
         valid_map, errors = map_obj.validate()
         if valid_map:
