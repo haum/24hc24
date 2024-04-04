@@ -3,7 +3,7 @@
 <h1>Games</h1>
 <ul>
 {% for g in object_list %}
-<li><a href="/viewer#{% url 'show_game' g.id %}">#{{g.id}} - Played by {{g.player}} at {{g.requested_at}} - Score: {{game.reference_score}}</a></li>
+<li><a href="/viewer#{% url 'show_game' g.id %}">#{{g.id}} - Played by {{g.player}} on map {{g.map.id}} ({{g.map.size}}) at {{g.requested_at}} - Score: {{game.reference_score}}</a></li>
 {% empty %}
     <li>No games yet.</li>
 {% endfor %}

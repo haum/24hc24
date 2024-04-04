@@ -21,13 +21,16 @@ from django.urls import include, path
 from django.conf.urls.static import static
 from .settings import BASE_DIR
 
-from serv.views import index, ListGamesView, show_game
+from serv.views import index, ListGamesView, ListMapsView, TeamView, show_game, show_map
 
 urlpatterns = [
     path('poseidon/', admin.site.urls),
     path('', index, name='index'),
     path('viewer/', TemplateView.as_view(template_name='viewer.html'), name='viewer'),
-    path('games/', ListGamesView.as_view(), name='games_list'),
+    path('games', ListGamesView.as_view(), name='games_list'),
+    path('team/<int:pk>', TeamView.as_view(template_name='team.html'), name='team'),
     path('game/<int:pk>', show_game, name='show_game'),
+    path('maps', ListMapsView.as_view(), name='maps_list'),
+    path('map/<int:pk>', show_map, name='show_map'),
     path('api/', include('serv.urls')),
 ] + static('/doc/', document_root=BASE_DIR / '..' / 'doc')

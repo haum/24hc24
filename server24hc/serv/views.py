@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
 from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -11,18 +12,38 @@ from django.contrib.auth.models import User
 from .models import Map, Game, Stage, Team, Score
 
 def index(request):
-    teams = Team.objects.filter(user__last_name="team")
+    teams = Team.objects.all()
     return render(request, 'index.html', {'teams': teams})
 
 def show_game(request, pk):
     game = Game.objects.get(pk=pk)
     return HttpResponse(game.map.map_data+'\n'+game.moves + f'\nEND {"OK" if game.victory else "NOK"} {game.reference_score}\n', content_type="text/plain")
 
+def show_map(request, pk):
+    map = Map.objects.get(pk=pk)
+    return HttpResponse(map.map_data+'\nEND NOK 0', content_type="text/plain")
+
+class TeamView(DetailView):
+    model = User
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['team'] = Team.objects.get(user=self.object)
+        context['games_player'] = Game.objects.filter(player=self.object).order_by('-completed_at')
+        games_on_proposed_maps = Game.objects.filter(map__proposed_by=self.object).order_by('-completed_at')
+        scores = {_.game.id: _.score for _ in Score.objects.filter(referee=self.object)}
+        context['games_game'] = [(game, scores.get(game.id, None)) for game in games_on_proposed_maps]
+
+        return context
+
 class ListGamesView(ListView):
     model = Game
 
     def get_queryset(self):
         return Game.objects.all().order_by('-completed_at')
+
+class ListMapsView(ListView):
+    model = Map
 
 class TokenTestView(APIView):
 

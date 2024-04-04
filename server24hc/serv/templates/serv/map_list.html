@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Maps</h1>
+<ul>
+{% for m in object_list %}
+<li><a href="/viewer#{% url 'show_map' m.id %}">#{{m.id}} - Proposed by {{m.proposed_by}} ({{m.size}})</a></li>
+{% empty %}
+    <li>No maps yet.</li>
+{% endfor %}
+</ul>
+{% endblock %}
