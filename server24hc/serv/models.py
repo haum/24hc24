@@ -64,7 +64,7 @@ class Map(models.Model):
         return [s.endpoint for s in Stage.objects.filter(maps=self).distinct()]
 
     def __str__(self):
-        return self.proposed_by.username + " - " + str(self.proposed_at)
+        return "#"+ str(self.id) + " - " + self.size+' map by team ' + self.proposed_by.username
 
     def validate(self):
         errors = MapUtils(self.map_data).find_error()
