@@ -54,6 +54,13 @@ class Map(models.Model):
     proposed_at = models.DateTimeField(auto_now_add=True)
     impossible = models.BooleanField(default=None, blank=True, null=True)
 
+    @property
+    def size(self):
+        return 'x'.join(self.map_data.split('\n')[0].split(' ')[1:]).rstrip()
+
+    def in_stage(self):
+        return [s.endpoint for s in Stage.objects.filter(maps=self).distinct()]
+
     def __str__(self):
         return self.proposed_by.username + " - " + str(self.proposed_at)
 
