@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import User
 
 from .maputils import Map as MapUtils
@@ -82,6 +83,8 @@ class Game(models.Model):
     def save(self, *args, **kwargs):
         if self.finished and self.reference_score is None:
             self.compute_reference_score()
+        if self.finished and self.completed_at is None:
+            self.completed_at = timezone.now()
         super().save(*args, **kwargs)
 
     def compute_reference_score(self):
