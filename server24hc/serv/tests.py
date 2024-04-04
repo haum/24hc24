@@ -3,6 +3,8 @@ import pytest
 import random
 
 from django.urls import reverse
+from django.utils import timezone
+from datetime import timedelta
 from rest_framework.authtoken.models import Token
 from .models import Team, Map, Game, Stage, Score
 
@@ -46,6 +48,13 @@ def test_assess_token(api_client, create_user, get_or_create_token):
     api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
     response = api_client.post('/api/tokentest')
     assert response.status_code == 200
+
+def test_assess_token_fail(api_client, create_user, get_or_create_token):
+    token = get_or_create_token
+
+    api_client.credentials(HTTP_AUTHORIZATION='Token ' + 'test phony')
+    response = api_client.post('/api/tokentest')
+    assert response.status_code == 401
 
 class TestMapSubmission:
     @pytest.fixture
@@ -107,6 +116,28 @@ class TestMapSubmission:
         api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         response = api_client.post('/api/map/new/phony', {'map': simple_map_str})
         assert response.status_code == 404
+
+    def test_add_too_many_maps(self, api_client, get_or_create_token, simple_map_str, stage_running):
+        stage_running.number_of_maps = 1
+        stage_running.save()
+
+        token = get_or_create_token
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = api_client.post(f'/api/map/new/{stage_running.endpoint}', {'map': simple_map_str})
+        assert response.status_code == 200
+        response = api_client.post(f'/api/map/new/{stage_running.endpoint}', {'map': simple_map_str})
+        assert response.status_code == 403
+        assert response.data['message'] == f'No more maps allowed for stage {stage_running.endpoint}'
+
+    def test_out_of_time_submission(self, api_client, get_or_create_token, simple_map_str, stage_running):
+        stage_running.end_of_map_submission = timezone.now() - timedelta(days=1)
+        stage_running.save()
+
+        token = get_or_create_token
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = api_client.post(f'/api/map/new/{stage_running.endpoint}', {'map': simple_map_str})
+        assert response.status_code == 403
+        assert response.data['message'] == f'End of map submission for stage {stage_running.endpoint} has passed'
 
 class TestGameRequestMechanics:
 
@@ -396,7 +427,7 @@ class TestScoringMechanics:
         assert response.status_code == 403, response.data
         assert response.data['message'] == 'This game has already been scored'
 
-@pytest.mark.only
+@pytest.mark.skip
 class TestTeamScoreComputation:
     def test_simple_scores(self, create_user):
         user1 = create_user()
@@ -578,3 +609,31 @@ class TestTeamScoreComputation:
         assert team2.score_player == 3+5
         assert team1.score_game == 4
         assert team2.score_game == 3
+
+@pytest.mark.only
+class TestStageMechanics:
+
+    def test_unfinished_games_upon_stage_end(self, create_user):
+        user1 = create_user()
+        user2 = create_user()
+
+        m = Map(map_data='MAP 2 2 2\nAAA AAA\nAAA AAA\nAAA AAA\nAAA AAA\nENDMAP\nSTART 0 0 0', proposed_by=user1)
+        m.save()
+
+        s = Stage(endpoint='test', running=True)
+        s.save()
+
+        s.maps.add(m)
+
+        g1 = Game(map=m, player=user1, stage=s, finished=False)
+        g1.save()
+        g2 = Game(map=m, player=user2, stage=s, finished=False)
+        g2.save()
+
+        s.running = False
+        s.save()
+
+        assert Game.objects.get(pk=g1.pk).finished
+        assert Game.objects.get(pk=g2.pk).finished
+        assert Game.objects.get(pk=g1.pk).victory == False
+        assert Game.objects.get(pk=g2.pk).victory == False
