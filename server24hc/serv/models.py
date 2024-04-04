@@ -15,32 +15,34 @@ class Team(models.Model):
     @property
     def score_player(self):
         score = 0
-        for s in Stage.objects.all():
+        for s in Stage.objects.filter(dev=False):
             for m in s.maps.all():
                 g = Game.objects.filter(map=m, finished=True, stage=s, player=self.user).order_by('-completed_at').first()
                 if g is None:
                     continue
-                best_score = Game.objects.filter(map=m, finished=True, victory=True, stage=s).order_by('reference_score').first().reference_score
-                if g.victory:
-                    current_player_score = g.reference_score
-                    score += current_player_score - best_score
-                else:
-                    worst_score = Game.objects.filter(map=m, finished=True, victory=True, stage=s).order_by('-reference_score').first().reference_score
-                    score += 5 + 2*(worst_score - best_score)
+                best_scored_game = Game.objects.filter(map=m, finished=True, victory=True, stage=s).order_by('reference_score').first()
+                if best_scored_game is not None:
+                    best_score = best_scored_game.reference_score
+                    if g.victory:
+                        current_player_score = g.reference_score
+                        score += current_player_score - best_score
+                    else:
+                        worst_score = Game.objects.filter(map=m, finished=True, victory=True, stage=s).order_by('-reference_score').first().reference_score
+                        score += 5 + 2*(worst_score - best_score)
         return score
 
     @property
     def score_game(self):
         score = 0
-        for s in Stage.objects.all():
+        for s in Stage.objects.filter(dev=False):
+            if s.number_of_maps > 0:
+                score += 10*(s.number_of_maps - s.maps.filter(proposed_by=self.user).count())
             for m in s.maps.filter(proposed_by=self.user):
                 winning_games = Game.objects.filter(map=m, finished=True, victory=True, stage=s).count()
                 wrongly_scored_games = Score.objects.filter(game__map=m, game__stage=s, referee=self.user, valid=False).count()
-                print(wrongly_scored_games)
-                impossible_map = False#bruteforce_solve(m.map_data)[1] == []
                 number_of_games = Game.objects.filter(map=m, stage=s).count()
 
-                score += winning_games + 10*(wrongly_scored_games > 0) + impossible_map*number_of_games*10
+                score += winning_games + 10*(wrongly_scored_games > 0) + (m.impossible is not None)*m.impossible*number_of_games*10
 
         return score
 
