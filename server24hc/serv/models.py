@@ -52,6 +52,7 @@ class Map(models.Model):
     map_data = models.TextField()
     proposed_by = models.ForeignKey(User, on_delete=models.CASCADE)
     proposed_at = models.DateTimeField(auto_now_add=True)
+    impossible = models.BooleanField(default=None, blank=True, null=True)
 
     def __str__(self):
         return self.proposed_by.username + " - " + str(self.proposed_at)
@@ -65,6 +66,18 @@ class Stage(models.Model):
     endpoint = models.CharField(max_length=100, unique=True)
     time_limit = models.IntegerField(default=None, null=True, blank=True, help_text="Time limit in seconds")
     running = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if not self.running:
+            games = Game.objects.filter(stage=self, finished=False).update(finished=True, victory=False)
+            for m in self.maps.filter(impossible=None):
+                if Game.objects.filter(map=m, stage=self, victory=True).count() != 0:
+                    m.impossible = False
+                    m.save()
+                else:
+                    m.impossible = bruteforce_solve(MapUtils(m.map_data), stop_at_first=True)[0] == []
+                    m.save()
 
     def __str__(self):
         return self.endpoint
