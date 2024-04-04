@@ -133,12 +133,6 @@ class Map:
         if len(self.blocks) != self.Nx*self.Ny*self.Nz:
             return 'Wrong number of blocks'
 
-        bs = self.start
-        if not bs.empty and \
-           bs.bt in (Map.BlockType.GOAL, Map.BlockType.ASTEROID) and \
-           bs.px * bs.mx * bs.py * bs.my * bs.pz * bs.mz != 0:
-            return "Start in forbidden block"
-
         arrival = False
         cp1 = False
         cp2 = False
@@ -157,6 +151,12 @@ class Map:
                (b.py == b.my and b.my == 0) or \
                (b.pz == b.mz and b.mz == 0):
                 return 'Invalid block'
+
+        bs = self.start
+        if not bs.empty:
+            if bs.bt in (Map.BlockType.ASTEROID, Map.BlockType.MAGCLOUD, Map.BlockType.CP1) or \
+               (bs.bt == Map.BlockType.GOAL and not cp1):
+                return "Start in forbidden block"
 
         if not arrival:
             return 'No arrival'
