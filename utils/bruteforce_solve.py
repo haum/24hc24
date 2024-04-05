@@ -29,14 +29,14 @@ def bruteforce_solve(m, stop_at_first=False, progress=False):
             for Ax, Ay, Az in itertools.product((-1, 0, 1), (-1, 0, 1), (-1, 0, 1)):
                 result = m.analyze_path_step(state, Ax, Ay, Az)
                 if isinstance(result, Map.State):
+                    nmoves = infos[state].moves + 1
                     if result in infos:
-                        nmoves = infos[state].moves + 1
                         if nmoves < infos[result].moves:
                             infos[result] = StateInfo(nmoves, state, Ax, Ay, Az)
 
                     else:
                         toexplore.add(result)
-                        infos[result] = StateInfo(infos[state].moves+1, state, Ax, Ay, Az)
+                        infos[result] = StateInfo(nmoves, state, Ax, Ay, Az)
                 else:
                     if result.ok:
                         nmoves = infos[state].moves + result.moves
