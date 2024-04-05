@@ -27,7 +27,7 @@ table {
 }
 
 header h1 {
-	transform: rotate(-1deg);
+	transform: rotate(-1.5deg);
 	padding: .4em 0;
 	font-size: 3.3em;
 	text-align: center;
@@ -37,15 +37,12 @@ header h1 {
 header h1 a {
 	color: white;
 	text-decoration: none;
+	text-shadow: 0px 0px 20px rgba(0,0,0,0.7);
 }
 
-header:hover {
-	transform: rotate(-3deg);
-}
 
 header h1 a:hover {
 	color: white;
-	font-size: 103%;
 	text-decoration: none;
 }
 
@@ -102,11 +99,13 @@ a {
 	padding: 0.5em 0 0.5em 0;
 	margin: .5em;
 	display: inline-block;
+	border: 2px solid transparent;
 }
 
 #menu ul li a:hover {
 	background-color: rgba(255,255,255,0.0);
 	border: 2px solid white;
+	transform: scale(1) rotate(0deg);
 	transform: rotate(-2deg);
 }
 
@@ -132,14 +131,14 @@ table.wide tr:nth-child(odd):not(:first-child) {
 
 #leaderboard tr:first-child {
 	border-bottom: 2px solid white;
-	color: #303030;
+	color: #454545;
 	font-family: Aquire, Arial, sans-serif;
 	font-weight: bold;
 }
 
 footer {
 	width: 1000px;
-	font-size: 0.9em;
+	font-size: 10pt;
 	height: 2em;
 	text-align: center;
 	position: absolute;
@@ -156,6 +155,7 @@ footer {
 }
 
 th {
+	color: #454545;
 	border-bottom: 2px solid white;
 	font-family: Aquire, Arial, sans-serif;
 	font-weight: bold;
