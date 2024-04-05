@@ -293,8 +293,9 @@ function addPath_line_END(ok, moves) {
 	playable_url = null;
 	if (playbtns) playbtns.visible = false;
 }
-function addPath_lines(txt) {
-	const lines = txt.match(/.*\n/g) || [];
+
+export function parseCmds(txt) {
+	const lines = txt.match(/.*\n?/g) || [];
 	for (const line of lines) {
 		const d = line.split(/\s/);
 		if (d[0] == "START") {
@@ -420,7 +421,7 @@ export function parseLogTxt(txt) {
 	// Path
 	{
 		const path = txt.match(/(START[\s\S]*END.*\n)/m)?.[1] || txt.match(/(START[\s\S]*\n)/)?.[1];
-		if (path) addPath_lines(path);
+		if (path) parseCmds(path);
 	}
 }
 
@@ -434,7 +435,7 @@ async function play(Ax, Ay, Az) {
 	if (!playable_url) return;
 	const r = await fetch(playable_url, { method: "POST", headers: { "Content-Type": "text/plain" }, body: "ACC " + Ax + " " + Ay + " " + Az });
 	const t = await r.text();
-	addPath_lines(t);
+	parseCmds(t);
 }
 
 function animWall(opacityMin, opacityMax, duration) {
