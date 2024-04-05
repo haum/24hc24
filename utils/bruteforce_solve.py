@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding:utf8 -*-
 
+import heapq
 import itertools
+import random
 from collections import namedtuple
 
 from map import Map
@@ -12,15 +14,17 @@ def bruteforce_solve(m, stop_at_first=False, progress=False):
     StateInfo = namedtuple('StateInfo', 'moves prevstate Ax Ay Az'.split())
     initial_state = Map.State(m.Sx, m.Sy, m.Sz, 0, 0, 0, 0)
     infos = { initial_state: StateInfo(0, initial_state, 0, 0, 0) }
-    toexplore = set()
-    toexplore.add(initial_state)
+    toexplore = [(0, initial_state)]
     finalstateinfo = None
+
+    def score(moves, state): # smaller explored first
+        return (-state.checkpoint, random.random())
 
     try:
         spincount = 0
         spinner = itertools.cycle('-\\|/')
         while toexplore:
-            state = toexplore.pop()
+            _, state = heapq.heappop(toexplore)
             if finalstateinfo and infos[state].moves > finalstateinfo.moves: continue
             if progress:
                 if spincount & 0x7f == 0:
@@ -39,7 +43,7 @@ def bruteforce_solve(m, stop_at_first=False, progress=False):
                             infos[result] = StateInfo(nmoves, state, Ax, Ay, Az)
 
                     else:
-                        toexplore.add(result)
+                        heapq.heappush(toexplore, (score(nmoves, result), result))
                         infos[result] = StateInfo(nmoves, state, Ax, Ay, Az)
                 else:
                     if result.ok:
