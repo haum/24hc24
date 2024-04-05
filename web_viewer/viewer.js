@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { StereoscopicEffects } from 'threejs-StereoscopicEffects';
-import { ViewerControls } from './controller.js';
+import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
 
 let scene, background, lights, camera, renderer, controls, stereofx, modecombo, playbtns;
 let CUBESZ = 0.1;
@@ -501,7 +501,12 @@ export function init() {
 	stereofx = new StereoscopicEffects(renderer);
 	stereofx.setSize(window.innerWidth, window.innerHeight);
  
-	controls = new ViewerControls(camera, world, renderer.domElement);
+	controls = new TrackballControls(camera, renderer.domElement);
+	controls.target = world.position.clone();
+	controls.rotateSpeed = 1.0;
+	controls.zoomSpeed = 1.0;
+	controls.panSpeed = 0.1;
+	controls.keys = ['CtrlLeft', 'AltLeft', 'ShiftLeft'];
 
 	modecombo = StereoscopicEffects.effectsListForm();
 	modecombo.classList.add('overlay');
@@ -690,6 +695,7 @@ export function init() {
 
 function render(time) {
 	controls.update(time);
+	camera.up.set(0, 1, 0);
 	for (let i in animations) {
 		const a = animations[i];
 		const ii = Math.floor(i/2);
