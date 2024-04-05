@@ -17,15 +17,19 @@ def bruteforce_solve(m, stop_at_first=False, progress=False):
     finalstateinfo = None
 
     try:
-        count = 0
+        spincount = 0
+        spinner = itertools.cycle('-\\|/')
         while toexplore:
             state = toexplore.pop()
             if finalstateinfo and infos[state].moves > finalstateinfo.moves: continue
-            count += 1
             if progress:
-                if count & 0xfff == 0:
-                    print(f".", file=sys.stderr, end="\n" if count & 0xffff == 0 else "")
+                if spincount & 0x7f == 0:
+                    sys.stderr.write('  ')
+                    sys.stderr.write(next(spinner))
+                    sys.stderr.write('  ')
                     sys.stderr.flush()
+                    sys.stderr.write('\b\b\b\b\b')
+                spincount += 1
             for Ax, Ay, Az in itertools.product((-1, 0, 1), (-1, 0, 1), (-1, 0, 1)):
                 result = m.analyze_path_step(state, Ax, Ay, Az)
                 if isinstance(result, Map.State):
@@ -50,8 +54,9 @@ def bruteforce_solve(m, stop_at_first=False, progress=False):
                             finalstateinfo = StateInfo(nmoves, state, Ax, Ay, Az)
                         if stop_at_first:
                             toexplore.clear()
+        print('End of search', file=sys.stderr)
     except KeyboardInterrupt:
-        pass
+        print('\b\bStopped search', file=sys.stderr)
 
     if finalstateinfo:
         path = []
