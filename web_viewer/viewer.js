@@ -503,10 +503,8 @@ export function init() {
  
 	controls = new ViewerControls(camera, world, renderer.domElement);
 
-	const overlay = document.createElement('div');
-	document.body.appendChild(overlay);
-
 	modecombo = StereoscopicEffects.effectsListForm();
+	modecombo.classList.add('overlay');
 	modecombo.firstChild.label = "Monoscopic"
 	modecombo.firstChild.firstChild.remove();
 	modecombo.firstChild.firstChild.label = "Monoscopic";
@@ -517,10 +515,10 @@ export function init() {
 	modecombo.style.right = 0;
 	modecombo.addEventListener('change', () => changeStereoMode(modecombo.value));
 	changeStereoMode(defaultEffect);
-	overlay.appendChild(modecombo);
+	document.body.appendChild(modecombo);
 	document.addEventListener('keydown', e => {
 		if (e.keyCode == 77)
-			overlay.style.display = (overlay.style.display == 'none') ? 'block' : 'none';
+			document.body.classList.toggle('presentation')
 	});
 
 	const xr_opts = { optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking'] };
@@ -543,7 +541,8 @@ export function init() {
 				renderer.xr.getSession()?.end();
 			}
 		});
-		overlay.appendChild(btn_vr);
+		btn_vr.classList.add('overlay');
+		document.body.appendChild(btn_vr);
 	});
 
 	const btn_ar = document.createElement('button');
@@ -565,7 +564,8 @@ export function init() {
 				renderer.xr.getSession()?.end();
 			}
 		});
-		overlay.appendChild(btn_ar);
+		btn_ar.classList.add('overlay');
+		document.body.appendChild(btn_ar);
 	});
 
 	let xr_prev_bg;
