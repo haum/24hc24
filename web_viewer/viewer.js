@@ -43,6 +43,7 @@ const animations = [
 let gridSize = { x: 10, y: 10, z: 10 };
 let path_line = null;
 let playable_url = null;
+let autorotate = true;
 
 const line_material = new THREE.ShaderMaterial({
 	uniforms: {
@@ -507,6 +508,7 @@ export function init() {
 	controls.zoomSpeed = 1.0;
 	controls.panSpeed = 0.1;
 	controls.keys = ['CtrlLeft', 'AltLeft', 'ShiftLeft'];
+	controls.addEventListener('start', () => { autorotate = false; });
 
 	modecombo = StereoscopicEffects.effectsListForm();
 	modecombo.classList.add('overlay');
@@ -524,6 +526,8 @@ export function init() {
 	document.addEventListener('keydown', e => {
 		if (e.keyCode == 77)
 			document.body.classList.toggle('presentation')
+		if (e.keyCode == 82)
+			autorotate = !autorotate;
 	});
 
 	const xr_opts = { optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking'] };
@@ -696,6 +700,8 @@ export function init() {
 function render(time) {
 	controls.update(time);
 	camera.up.set(0, 1, 0);
+	if (autorotate)
+		world.rotation.set(0, time/1000/9, 0);
 	for (let i in animations) {
 		const a = animations[i];
 		const ii = Math.floor(i/2);
