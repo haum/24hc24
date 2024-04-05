@@ -13,6 +13,10 @@ class Team(models.Model):
         return Game.objects.filter(player=self.user, finished=True).count()
 
     @property
+    def games_scored(self):
+        return Score.objects.filter(referee=self.user).count()
+
+    @property
     def score_player(self):
         score = 0
         for s in Stage.objects.filter(dev=False):
@@ -60,6 +64,7 @@ class Map(models.Model):
     def size(self):
         return 'x'.join(self.map_data.split('\n')[0].split(' ')[1:]).rstrip()
 
+    @property
     def in_stage(self):
         return [s.endpoint for s in Stage.objects.filter(maps=self).distinct()]
 
