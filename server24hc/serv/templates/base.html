@@ -3,8 +3,23 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <style>
+    @font-face {
+      font-family: 'Aquire';
+      src: url('{% static 'fonts/aquire-font/Aquire-BW0ox.otf' %}');
+      font-weight: normal;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Aquire';
+      src: url('{% static 'fonts/aquire-font/AquireBold-8Ma60.otf' %}');
+      font-weight: bold;
+      font-style: normal;
+    }
+    </style>
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-    <title>base</title>
+
+    <title>{% block title %}{% endblock %}L'odyssée d'HAUMère</title>
     {% block extra_head %}{% endblock %}
   </head>
   <body>
@@ -12,7 +27,18 @@
     <header>
     <h1><a href={% url 'index'%}>L'odyssée d'HAUMère</a></h1>
     </header>
+
+    <div id=menu>
+      <ul>
+        <li><a href='{% url 'index' %}'>Leaderboard</a></li>
+        <li><a href='{% url 'games_list' %}'>Games</a></li>
+        <li><a href='{% url 'maps_list' %}'>Maps</a></li>
+      </ul>
+    </div>
+
+    <section id=content>
     {% block content %}{% endblock %}
+    </section>
     <footer>Beerware 2024 &mdash; Codé avec Amour et Vim par le <href='://haum.org'>HAUM</a></footer>
     {% endblock %}
   </body>

@@ -1,11 +1,29 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1>Games</h1>
-<ul>
-{% for g in object_list %}
-<li><a href="/viewer#{% url 'show_game' g.id %}">#{{g.id}} - Played by {{g.player}} on map {{g.map.id}} ({{g.map.size}}) at {{g.requested_at}} - Score: {{game.reference_score}}</a></li>
-{% empty %}
-    <li>No games yet.</li>
-{% endfor %}
-</ul>
+
+<table class=wide>
+    <tr>
+        <th>Timestamp</th>
+        <th>Joueur</th>
+        <th>Arbitre</th>
+        <th>Map</th>
+        <th>Stage</th>
+        <th>Score</th>
+    </tr>
+    {% for game in object_list %}
+    <tr>
+        <td><a href = '/viewer#{% url 'show_game' game.id %}'>{{game.requested_at|time}}</a></td>
+        <td><a href="{% url 'team' game.player.id %}">{{game.player}}</td>
+        <td><a href="{% url 'team' game.map.proposed_by.id %}">{{game.map.proposed_by}}</td>
+        <td><a href = '/viewer#{% url 'show_map' game.map.id %}'>Map #{{game.map.id}} ({{game.map.size}})</a></td>
+        <td>{{game.stage}}</td>
+        <td>{{game.reference_score}}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="6">Aucune partie</td>
+    </tr>
+    {% endfor %}
+<table>
 {% endblock %}

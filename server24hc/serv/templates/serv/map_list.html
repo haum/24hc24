@@ -1,11 +1,26 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1>Maps</h1>
-<ul>
-{% for m in object_list %}
-<li><a href="/viewer#{% url 'show_map' m.id %}">#{{m.id}} - Proposed by {{m.proposed_by}} ({{m.size}})</a></li>
-{% empty %}
-    <li>No maps yet.</li>
-{% endfor %}
-</ul>
+<table class=wide>
+    <tr>
+        <th>ID</th>
+        <th>Team</th>
+        <th>Taille</th>
+        <th>Stages</th>
+        <th>Impossible ?</th>
+    </tr>
+    {% for m in object_list %}
+    <tr>
+        <td><a href = '/viewer#{% url 'show_map' m.id %}'>Map #{{m.id}}</a></td>
+        <td><a href="{% url 'team' m.proposed_by.id %}">{{m.proposed_by}}</td>
+        <td>{{m.size}}</td>
+        <td>{{m.in_stage|join:', '}}</td>
+        <td>{% if m.impossible %}Ah ah! Cheh.{% endif %}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5">Aucune carte</td>
+    </tr>
+    {% endfor %}
+<table>
 {% endblock %}

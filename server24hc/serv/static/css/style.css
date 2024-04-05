@@ -11,8 +11,7 @@
  */
 
 body {
-	background: white;
-	color: black;
+	color: white;
 	font-family: Arial, sans-serif;
 	width: 1000px;
 	margin: 0 auto;
@@ -23,20 +22,99 @@ body {
 
 }
 
+table {
+	border-collapse: collapse;
+}
+
 header h1 {
-	font-size: 3em;
+	transform: rotate(-1deg);
+	padding: .4em 0;
+	font-size: 3.3em;
 	text-align: center;
+	font-family: Aquire, Arial, sans-serif;
+}
+
+header h1 a {
+	color: white;
+	text-decoration: none;
+}
+
+header:hover {
+	transform: rotate(-3deg);
+}
+
+header h1 a:hover {
+	color: white;
+	font-size: 103%;
+	text-decoration: none;
 }
 
 a {
-	color: #ffc;
+	color: white;
+	text-decoration: none;
+	font-weight: bold;
+}
+
+.wide a:hover, a:hover {
+	transform: scale(1.1) rotate(-2deg);
+}
+
+#content h1 {
+	font-size: 1.8em;
+	font-family: Aquire, Arial, sans-serif;
+	border-bottom: 2px solid white;
+}
+
+#content h2 {
+	font-size: 1.1em;
+	font-family: Aquire, Arial, sans-serif;
+	color: #f0f0f0;
+}
+
+#content {
+	font-size: 1.2em;
+}
+
+#menu {
+	width: 100%;
+	text-align: center;
+	font-weight: bold;
+	font-size: 1.5em;
+	margin-bottom: 10px;
+	padding: 0;
+}
+
+#menu ul {
+	margin: 0;
+	padding: 0;
+	list-style-type: none;
+}
+
+#menu ul li {
+	display: inline;
+}
+
+#menu ul li a {
+	background-color: rgba(255,255,255,0.2);
+	vertical-align: middle;
+	/* padding: 0.5em 3em; */
+	width: 10em;
+	padding: 0.5em 0 0.5em 0;
+	margin: .5em;
+	display: inline-block;
+}
+
+#menu ul li a:hover {
+	background-color: rgba(255,255,255,0.0);
+	border: 2px solid white;
+	transform: rotate(-2deg);
 }
 
 #leaderboard {
 	width: 100%;
 }
 
-#leaderboard a {
+table a {
 	display: block;
 }
 
@@ -45,6 +123,18 @@ a {
 }
 #leaderboard tr  td:first-child {
 		text-align: left;
+}
+
+#leaderboard tr:nth-child(odd):not(:first-child),
+table.wide tr:nth-child(odd):not(:first-child) {
+	background-color: rgba(255,255,255,0.1);
+}
+
+#leaderboard tr:first-child {
+	border-bottom: 2px solid white;
+	color: #303030;
+	font-family: Aquire, Arial, sans-serif;
+	font-weight: bold;
 }
 
 footer {
@@ -56,6 +146,38 @@ footer {
 	bottom: 0;
 }
 
+/* Teams */
 
+#teaminfos {
+	width: 400px;
+	margin: 0 auto;
+	background-color: rgba(0,0,0,0.2);
+	box-shadow: 0px 0px 10px 10px rgba(0,0,0,0.2);
+}
 
+th {
+	border-bottom: 2px solid white;
+	font-family: Aquire, Arial, sans-serif;
+	font-weight: bold;
+}
 
+#teaminfos tr td {
+	text-align: center;
+	padding: 0.5em;
+}
+
+#teaminfos tr td:first-child {
+	text-align: left;
+	font-family: Aquire, Arial, sans-serif;
+	border-right: 2px solid white;
+	padding-right: 0;
+	font-weight: bold;
+}
+
+table.wide {
+	width: 100%;
+}
+
+table.wide tr td {
+	text-align: center;
+}
