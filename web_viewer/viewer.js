@@ -312,6 +312,9 @@ export function parseCmds(txt) {
 			const ok = d[1] == "OK";
 			const moves = parseFloat(d[2]);
 			addPath_line_END(ok, moves);
+		} else if (d[0] == "LOAD") {
+			const url = d[1];
+			parseLogFetch(url);
 		}
 	}
 	path_rebuild_line();
