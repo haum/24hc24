@@ -22,7 +22,11 @@
 }
 		</script>
 		<script type="module">
-			import { init } from 'viewer'
+			import { init, parseCmds } from 'viewer'
+			window.connect_ws = url => {
+				const ws = new WebSocket(url);
+				ws.onmessage = e => parseCmds(e.data);
+			};
 			init();
 		</script>
 	</head>
