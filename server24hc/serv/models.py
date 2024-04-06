@@ -6,6 +6,9 @@ from .maputils import Map as MapUtils
 from .bruteforce_solve import bruteforce_solve
 
 class Team(models.Model):
+    name = models.CharField(max_length=100, unique=True, null=True, blank=True)
+    position = models.CharField(max_length=250, blank=True, null=True)
+    student = models.BooleanField(default=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     @property

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load serv_utils %}
 {% block content %}
 <h1>Games</h1>
 
@@ -14,8 +15,8 @@
     {% for game in object_list %}
     <tr>
         <td><a href = '/viewer#{% url 'show_game' game.id %}'>{{game.requested_at|time}}</a></td>
-        <td><a href="{% url 'team' game.player.id %}">{{game.player}}</td>
-        <td><a href="{% url 'team' game.map.proposed_by.id %}">{{game.map.proposed_by}}</td>
+        <td><a href="{% url 'team' game.player.id %}">{{game.player|displayname}}</td>
+        <td><a href="{% url 'team' game.map.proposed_by.id %}">{{game.map.proposed_by|displayname}}</td>
         <td><a href = '/viewer#{% url 'show_map' game.map.id %}'>Map #{{game.map.id}} ({{game.map.size}})</a></td>
         <td>{{game.stage}}</td>
         <td>{{game.reference_score}}</td>

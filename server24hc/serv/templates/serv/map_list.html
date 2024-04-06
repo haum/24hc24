@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load serv_utils %}
 {% block content %}
 <h1>Maps</h1>
 <table class=wide>
@@ -12,7 +13,7 @@
     {% for m in object_list %}
     <tr>
         <td><a href = '/viewer#{% url 'show_map' m.id %}'>Map #{{m.id}}</a></td>
-        <td><a href="{% url 'team' m.proposed_by.id %}">{{m.proposed_by}}</td>
+        <td><a href="{% url 'team' m.proposed_by.id %}">{{m.proposed_by|displayname}}</td>
         <td>{{m.size}}</td>
         <td>{{m.in_stage|join:', '}}</td>
         <td>{% if m.impossible %}Ah ah! Cheh.{% endif %}</td>

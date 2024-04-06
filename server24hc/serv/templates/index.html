@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 
+{% load serv_utils %}
 {% block content %}
 <h1>Leaderboard</h1>
 
@@ -13,7 +14,7 @@
   </tr>
 {% for t in teams %}
   <tr>
-    <td><a href='{% url 'team' t.user.id %}'>{{t.user.username}}</a></td>
+    <td><a href='{% url 'team' t.user.id %}'>{{t|displayname}}</a></td>
     <td>{{t.games_played}}</td>
     <td>{{t.score_player}}</td>
     <td>{{t.score_game}}</td>

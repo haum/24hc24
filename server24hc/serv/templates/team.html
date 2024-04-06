@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
+{% load serv_utils %}
 
 {% block title %}Team {{object.username}} - {% endblock %}
 
 {% block content %}
 
-<h1>Team {{object.username}}</h1>
+<h1>Team {{object|displayname}}</h1>
 <table id=teaminfos>
     <tr class=border-bottom>
         <th></th>
@@ -50,7 +51,7 @@
         <td><a href = '/viewer#{% url 'show_game' game.id %}'>{{game.requested_at|time}}</a></td>
         <td><a href = '/viewer#{% url 'show_map' game.map.id %}'>Map #{{game.map.id}} ({{game.map.size}})</a></td>
         <td>{{game.stage}}</td>
-        <td><a href="{% url 'team' game.map.proposed_by.id %}">{{game.map.proposed_by}}</td>
+        <td><a href="{% url 'team' game.map.proposed_by.id %}">{{game.map.proposed_by|displayname}}</td>
         <td>{{game.reference_score}}</td>
     </tr>
     {% empty %}
@@ -76,7 +77,7 @@
         <td><a href = '/viewer#{% url 'show_game' game.id %}'>{{game.requested_at|time}}</a></td>
         <td><a href = '/viewer#{% url 'show_map' game.map.id %}'>Map #{{game.map.id}} ({{game.map.size}})</a></td>
         <td>{{game.stage}}</td>
-        <td><a href="{% url 'team' game.player.id %}">{{game.player}}</td>
+        <td><a href="{% url 'team' game.player.id %}">{{game.player|displayname}}</td>
         <td>{{game.reference_score}}</td>
         <td>{{score}}</td>
     </tr>
