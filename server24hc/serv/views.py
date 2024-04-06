@@ -160,10 +160,14 @@ class ProposeSolutionView(APIView):
                 {'status': 'error', 'message': 'You are not allowed to propose a solution for this game'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        print(game.finished, game.moves)
         if game.finished:
             return Response(
                 {'status': 'error', 'message': 'This game has already been played'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        if game.stage is not None and game.stage.end_of_moves_submission is not None and game.stage.end_of_moves_submission < timezone.now():
+            return Response(
+                {'status': 'error', 'message': f'End of moves submission for stage {game.stage.endpoint} has passed'},
                 status=status.HTTP_403_FORBIDDEN
             )
         game.moves = moves
@@ -183,6 +187,16 @@ class ScoreGameView(APIView):
                 return Response(
                     {'status': 'error', 'message': f'No stage named {stage_endpoint} found'},
                     status=status.HTTP_404_NOT_FOUND
+                )
+            if not stage.running:
+                return Response(
+                    {'status': 'error', 'message': f'Stage {stage_endpoint} is not running'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            if stage.end_of_score_submission is not None and stage.end_of_score_submission < timezone.now():
+                return Response(
+                    {'status': 'error', 'message': f'End of score submission for stage {stage_endpoint} has passed'},
+                    status=status.HTTP_403_FORBIDDEN
                 )
             game = Game.objects.filter(map__proposed_by=referee, stage=stage, score=None, finished=True).order_by('?').first()
             return Response({'status': 'success', 'game_id': game.id, 'map_data': game.map.map_data, 'moves': game.moves, 'stage': stage.endpoint})
@@ -222,6 +236,16 @@ class ScoreGameView(APIView):
                 return Response(
                     {'status': 'error', 'message': f'No stage named {stage_endpoint} found'},
                     status=status.HTTP_404_NOT_FOUND
+                )
+            if not stage.running:
+                return Response(
+                    {'status': 'error', 'message': f'Stage {stage_endpoint} is not running'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            if stage.end_of_score_submission is not None and stage.end_of_score_submission < timezone.now():
+                return Response(
+                    {'status': 'error', 'message': f'End of score submission for stage {stage_endpoint} has passed'},
+                    status=status.HTTP_403_FORBIDDEN
                 )
             if game.stage != stage:
                 return Response(

@@ -303,6 +303,13 @@ ACC -1 0 0"""
         self.game.delete()
         self.player_user.delete()
 
+    @pytest.fixture
+    def stage_running(self):
+        stage = Stage(endpoint='test', running=True)
+        stage.save()
+        yield stage
+        stage.delete()
+
     def test_valid_solution(self, api_client, setup_game_firstmap, first_map_solution):
         token = Token.objects.get(user=self.player_user)
         api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
@@ -349,6 +356,19 @@ ACC -1 0 0"""
         response = api_client.post(f'/api/game/{self.game.id}/solve', {'moves': first_map_solution})
         assert response.status_code == 403, response.data
         assert response.data['message'] == 'You are not allowed to propose a solution for this game'
+
+    def test_out_of_time_solution(self, api_client, get_or_create_token, setup_game_firstmap, first_map_solution, stage_running):
+        stage_running.maps.add(self.game.map)
+        stage_running.end_of_moves_submission = timezone.now() - timedelta(days=1)
+        stage_running.save()
+        self.game.stage = stage_running
+        self.game.save()
+
+        token = get_or_create_token
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = api_client.post(f'/api/game/{self.game.id}/solve', {'moves': first_map_solution})
+        assert response.status_code == 403
+        assert response.data['message'] == f'End of moves submission for stage {stage_running.endpoint} has passed'
 
 class TestScoringMechanics:
     @pytest.fixture
@@ -440,6 +460,42 @@ class TestScoringMechanics:
         response = api_client.post('/api/score/', {'game_id': self.game.id, 'score': 1})
         assert response.status_code == 403, response.data
         assert response.data['message'] == 'This game has already been scored'
+
+    def test_solution_request_non_running(self, api_client, get_or_create_token, setup_finished_game_stage):
+        self.stage.running = False
+        self.stage.save()
+
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + self.referee_token.key)
+        response = api_client.get(f'/api/score/{self.stage.endpoint}')
+        assert response.status_code == 403
+        assert response.data['message'] == f'Stage {self.stage.endpoint} is not running'
+
+    def test_out_of_time_solution_request(self, api_client, get_or_create_token, setup_finished_game_stage):
+        self.stage.end_of_score_submission = timezone.now() - timedelta(days=1)
+        self.stage.save()
+
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + self.referee_token.key)
+        response = api_client.get(f'/api/score/{self.stage.endpoint}')
+        assert response.status_code == 403
+        assert response.data['message'] == f'End of score submission for stage {self.stage.endpoint} has passed'
+
+    def test_solution_non_running(self, api_client, get_or_create_token, setup_finished_game_stage):
+        self.stage.running = False
+        self.stage.save()
+
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + self.referee_token.key)
+        response = api_client.post(f'/api/score/{self.stage.endpoint}', {'game_id': self.game.id, 'score': 1})
+        assert response.status_code == 403
+        assert response.data['message'] == f'Stage {self.stage.endpoint} is not running'
+
+    def test_out_of_time_solution(self, api_client, get_or_create_token, setup_finished_game_stage):
+        self.stage.end_of_score_submission = timezone.now() - timedelta(days=1)
+        self.stage.save()
+
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + self.referee_token.key)
+        response = api_client.post(f'/api/score/{self.stage.endpoint}', {'game_id': self.game.id, 'score': 1})
+        assert response.status_code == 403, response.data
+        assert response.data['message'] == f'End of score submission for stage {self.stage.endpoint} has passed'
 
 @pytest.mark.skip
 class TestTeamScoreComputation:

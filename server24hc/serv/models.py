@@ -82,6 +82,8 @@ class Stage(models.Model):
     maps = models.ManyToManyField(Map)
     endpoint = models.CharField(max_length=100, unique=True)
     end_of_map_submission = models.DateTimeField(default=None, blank=True, null=True)
+    end_of_moves_submission = models.DateTimeField(default=None, blank=True, null=True)
+    end_of_score_submission = models.DateTimeField(default=None, blank=True, null=True)
     number_of_maps = models.IntegerField(default=-1)
     running = models.BooleanField(default=False)
     dev = models.BooleanField(default=False)
