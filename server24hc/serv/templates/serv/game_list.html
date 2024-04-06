@@ -20,7 +20,7 @@
         <td><a href="{% url 'team' game.map.proposed_by.id %}">{{game.map.proposed_by|displayname}}</td>
         <td><a href = '/viewer#{% url 'show_map' game.map.id %}'>Map #{{game.map.id}} ({{game.map.size}})</a></td>
         <td>{{game.stage}}</td>
-	<td>{{game.reference_score|floatformat:3}}</td>
+        <td>{{game.reference_score|floatformat:3}}</td>
         <td>{{game.analysis_message}}</td>
     </tr>
     {% empty %}

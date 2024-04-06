@@ -45,14 +45,16 @@
         <th>Stage</th>
         <th>Arbitre</th>
         <th>Score</th>
+        <th>Message</th>
     </tr>
     {% for game in games_player %}
-    <tr>
+    <tr class="{% if game.victory %}ok{% else %}ko{% endif %}">
         <td><a href = '/viewer#{% url 'show_game' game.id %}'>{{game.requested_at|time}}</a></td>
         <td><a href = '/viewer#{% url 'show_map' game.map.id %}'>Map #{{game.map.id}} ({{game.map.size}})</a></td>
         <td>{{game.stage}}</td>
         <td><a href="{% url 'team' game.map.proposed_by.id %}">{{game.map.proposed_by|displayname}}</td>
-        <td>{{game.reference_score}}</td>
+        <td>{{game.reference_score|floatformat:3}}</td>
+        <td>{{game.analysis_message}}</td>
     </tr>
     {% empty %}
     <tr>
@@ -71,15 +73,17 @@
         <th>Joueur</th>
         <th>Score Référence</th>
         <th>Score Proposé</th>
+        <th>Message</th>
     </tr>
     {% for game, score in games_game %}
-    <tr>
+    <tr class="{% if game.victory %}ok{% else %}ko{% endif %}">
         <td><a href = '/viewer#{% url 'show_game' game.id %}'>{{game.requested_at|time}}</a></td>
         <td><a href = '/viewer#{% url 'show_map' game.map.id %}'>Map #{{game.map.id}} ({{game.map.size}})</a></td>
         <td>{{game.stage}}</td>
         <td><a href="{% url 'team' game.player.id %}">{{game.player|displayname}}</td>
-        <td>{{game.reference_score}}</td>
-        <td>{{score}}</td>
+        <td>{{game.reference_score|floatformat:3}}</td>
+        <td>{{score|floatformat:3}}</td>
+        <td>{{game.analysis_message}}</td>
     </tr>
     {% empty %}
     <tr>
