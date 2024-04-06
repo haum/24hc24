@@ -23,7 +23,7 @@ class Team(models.Model):
     def score_player(self):
         score = 0
         for s in Stage.objects.filter(dev=False):
-            score += 10*(s.number_of_maps*(Team.objects.all().count() - 1) - Game.objects.filter(finished=True, player=self.user, stage=s))
+            score += 10*(s.number_of_maps*(Team.objects.all().count() - 1) - Game.objects.filter(finished=True, player=self.user, stage=s).count())
             for m in s.maps.all():
                 g = Game.objects.filter(map=m, finished=True, stage=s, player=self.user).order_by('-completed_at').first()
                 if g is None:
