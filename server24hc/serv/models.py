@@ -114,7 +114,10 @@ class Game(models.Model):
 
     def save(self, *args, **kwargs):
         if self.finished and self.reference_score is None:
-            self.compute_reference_score()
+            m = MapUtils(self.map.map_data)
+            analysis_result = m.analyze_path(self.moves)
+            self.reference_score = analysis_result.moves
+            self.victory = analysis_result.ok
         if self.finished and self.completed_at is None:
             self.completed_at = timezone.now()
         super().save(*args, **kwargs)
