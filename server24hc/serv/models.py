@@ -93,10 +93,9 @@ class Stage(models.Model):
             for m in self.maps.filter(impossible=None):
                 if Game.objects.filter(map=m, stage=self, victory=True).count() != 0:
                     m.impossible = False
-                    m.save()
                 else:
-                    m.impossible = bruteforce_solve(MapUtils(m.map_data), stop_at_first=True)[0] == []
-                    m.save()
+                    m.impossible = True
+                m.save()
 
     def __str__(self):
         return self.endpoint
@@ -117,6 +116,7 @@ class Game(models.Model):
         if self.finished and self.reference_score is None:
             m = MapUtils(self.map.map_data)
             analysis_result = m.analyze_path(self.moves)
+            self.analysis_message = analysis_result.msg
             self.reference_score = analysis_result.moves
             self.victory = analysis_result.ok
         if self.finished and self.completed_at is None:

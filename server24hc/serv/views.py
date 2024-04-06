@@ -118,7 +118,7 @@ class NewGameView(APIView):
             played_maps = set(Game.objects.filter(player=request.user, stage=stage).values_list('map', flat=True))
             all_maps_from_stage = set(stage.maps.values_list('id', flat=True))
             remaining_maps = all_maps_from_stage.difference(played_maps)
-            if not remaining_maps:
+            if not stage.dev and not remaining_maps:
                 return Response(
                     {'status': 'error', 'message': 'No more maps to play'},
                     status=status.HTTP_402_PAYMENT_REQUIRED
