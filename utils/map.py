@@ -230,6 +230,7 @@ class Map:
 
         eps = 0.0001
         intersections = []
+        blocks_precedence = [5, 0, 6, 7, 1, 2, 3, 4]
         for Vn in (Vx, Vy, Vz):
             if Vn:
                 for i in range(6*abs(Vn)+1):
@@ -244,11 +245,11 @@ class Map:
                         if Bx - b.mx/6 - eps <= Ix and Ix <= Bx + b.px/6 + eps and \
                            By - b.my/6 - eps <= Iy and Iy <= By + b.py/6 + eps and \
                            Bz - b.mz/6 - eps <= Iz and Iz <= Bz + b.pz/6 + eps:
-                               intersections.append((b, t))
+                               intersections.append((t, blocks_precedence[b.bt.value-1], b))
 
         Px, Py, Pz = Px+Vx, Py+Vy, Pz+Vz
 
-        for bc, submoves in sorted(intersections, key=lambda n: n[1]):
+        for submoves, _, bc in sorted(intersections):
             if bc.bt == self.BlockType.GOAL:
                 if not bc.empty:
                     if checkpoint == self.maxcp:
