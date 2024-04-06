@@ -160,6 +160,11 @@ class ProposeSolutionView(APIView):
                 {'status': 'error', 'message': 'You are not allowed to propose a solution for this game'},
                 status=status.HTTP_403_FORBIDDEN
             )
+        if game.finished or game.moves is not None:
+            return Response(
+                {'status': 'error', 'message': 'This game has already been played'},
+                status=status.HTTP_403_FORBIDDEN
+            )
         game.moves = moves
         game.finished = True
         game.save()

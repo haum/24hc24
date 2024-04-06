@@ -314,6 +314,20 @@ ACC -1 0 0"""
         assert db_game.moves == first_map_solution
         assert db_game.reference_score == pytest.approx(7.416666, rel=1e-6)
 
+    def test_double_submission(self, api_client, setup_game_firstmap, first_map_solution):
+        token = Token.objects.get(user=self.player_user)
+        api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = api_client.post(f'/api/game/{self.game.id}/solve', {'moves': first_map_solution})
+        assert response.status_code == 200, response.data
+        assert response.data['victory']
+        db_game = Game.objects.get(pk=self.game.id)
+        assert db_game.finished
+        assert db_game.moves == first_map_solution
+        assert db_game.reference_score == pytest.approx(7.416666, rel=1e-6)
+        response = api_client.post(f'/api/game/{self.game.id}/solve', {'moves': first_map_solution})
+        assert response.status_code == 403, response.data
+        assert response.data['message'] == 'This game has already been solved'
+
     def test_inexistent_game(self, api_client, setup_game_firstmap, first_map_solution):
         token = Token.objects.get(user=self.player_user)
         api_client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
