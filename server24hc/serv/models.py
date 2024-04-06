@@ -110,6 +110,7 @@ class Game(models.Model):
     finished = models.BooleanField(default=False)
     victory = models.BooleanField(default=False)
     player = models.ForeignKey(User, on_delete=models.CASCADE, related_name='player')
+    analysis_message = models.TextField(null=True, blank=True)
     reference_score = models.FloatField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
@@ -121,16 +122,6 @@ class Game(models.Model):
         if self.finished and self.completed_at is None:
             self.completed_at = timezone.now()
         super().save(*args, **kwargs)
-
-    def compute_reference_score(self):
-        if self.finished:
-            m = MapUtils(self.map.map_data)
-            analysis_result = m.analyze_path(self.moves)
-            self.reference_score = analysis_result.moves
-            self.victory = analysis_result.ok
-            return analysis_result
-        else:
-            return None
 
     def __str__(self):
         return f"Game {self.id} by {self.player.username} on map {self.map.id}"

@@ -163,9 +163,8 @@ class ProposeSolutionView(APIView):
         game.moves = moves
         game.finished = True
         game.save()
-        analysis_result = game.compute_reference_score()
-        return Response({'status': 'success', 'reference_score': analysis_result.moves,
-                         'message': analysis_result.msg, 'victory': analysis_result.ok})
+        return Response({'status': 'success', 'reference_score': game.reference_score,
+                         'message': game.analysis_message, 'victory': game.victory})
 
 class ScoreGameView(APIView):
 
