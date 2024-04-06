@@ -42,7 +42,7 @@ class TeamPlayerFilter(admin.SimpleListFilter):
         return queryset
 
 class TeamAdmin(admin.ModelAdmin):
-    list_display = ('user', 'games_played', 'score_player', 'score_game', 'score_full')
+    list_display = ('name', 'position', 'student', 'games_played', 'score_player', 'score_game', 'score_full')
 
 
 class MapAdmin(admin.ModelAdmin):
