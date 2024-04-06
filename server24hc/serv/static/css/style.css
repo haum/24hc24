@@ -13,7 +13,7 @@
 body {
 	color: white;
 	font-family: Arial, sans-serif;
-	width: 1000px;
+	width: 1250px;
 	margin: 0 auto;
 	background-image: url("/static/viewer/bg.webp");
 	background-size: 100% 100%;
@@ -181,3 +181,6 @@ table.wide {
 table.wide tr td {
 	text-align: center;
 }
+
+tr.ok { border-right: 5px solid #0a0; }
+tr.ko { border-right: 5px solid #a00; }
