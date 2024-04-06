@@ -66,6 +66,7 @@ class ScoreAdmin(admin.ModelAdmin):
 class GameAdmin(admin.ModelAdmin):
     list_display = ('id', 'player', 'on_map', 'stage', 'victory', 'finished', 'completed_at', 'reference_score')
     list_filter = (TeamPlayerFilter, 'stage', 'victory', 'finished')
+    actions = ['rescore']
 
     def player(self, obj):
         return obj.player.username
@@ -77,6 +78,12 @@ class GameAdmin(admin.ModelAdmin):
 
     def completed_at(self, obj):
         return obj.completed_at
+
+    @admin.action(description='Force rescore')
+    def rescore(self, request, queryset):
+        for game in queryset:
+            game.reference_score = None
+            game.save()
 
 
 class StageAdmin(admin.ModelAdmin):
