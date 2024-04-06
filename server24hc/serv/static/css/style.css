@@ -137,7 +137,7 @@ table.wide tr:nth-child(odd):not(:first-child) {
 }
 
 footer {
-	width: 1000px;
+	width: 1250px;
 	font-size: 10pt;
 	height: 2em;
 	text-align: center;
