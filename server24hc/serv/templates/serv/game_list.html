@@ -11,6 +11,7 @@
         <th>Map</th>
         <th>Stage</th>
         <th>Score</th>
+        <th>Message</th>
     </tr>
     {% for game in object_list %}
     <tr>
@@ -20,6 +21,7 @@
         <td><a href = '/viewer#{% url 'show_map' game.map.id %}'>Map #{{game.map.id}} ({{game.map.size}})</a></td>
         <td>{{game.stage}}</td>
         <td>{{game.reference_score}}</td>
+        <td>{{game.analysis_message}}</td>
     </tr>
     {% empty %}
     <tr>
