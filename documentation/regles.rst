@@ -102,3 +102,13 @@ Le nombre de coups joués est le nombre d'accélérations exécutées par le ser
 Si le mouvement se termine prématurément (collision ou franchissement de la destination par exemple), il est compté au prorata du déplacement prévu.
 
 Les arrêtes et faces des blocs comptent comme faisant partie du bloc : frôler, c'est toucher.
+
+Collisions avec plusieurs blocs à distance égale
+------------------------------------------------
+
+Dans le cas où une collision avec plusieurs blocs à distance égale devrait avoir lieu, l'ordre de prise en compte des contacts est le suivant :
+
+- Astéroides (Bleu)
+- Checkpoints (Vert)
+- Destination (Noir)
+
