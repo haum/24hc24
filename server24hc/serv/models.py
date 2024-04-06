@@ -45,10 +45,10 @@ class Team(models.Model):
         for s in Stage.objects.filter(dev=False):
             if s.number_of_maps > 0:
                 score += 10*(s.number_of_maps - s.maps.filter(proposed_by=self.user).count())
-                score += 10*(s.number_of_maps*(Team.objects.all().count() - 1) - Score.objects.filter(game__map__proposed_by=self.user, game__stage=s).count())
+                score += 10*(Game.objects.filter(stage=s, map__proposed_by=self.user).exclude(moves='').count() - Score.objects.filter(game__map__proposed_by=self.user, game__stage=s).count())
             for m in s.maps.filter(proposed_by=self.user):
                 winning_games = Game.objects.filter(map=m, finished=True, victory=True, stage=s).count()
-                wrongly_scored_games = Score.objects.filter(game__map=m, game__stage=s, referee=self.user, valid=False).count()
+                wrongly_scored_games = Score.objects.filter(game__map=m, game__stage=s, referee=self.user, valid=False).exclude(game__moves='').count()
                 number_of_games = Game.objects.filter(map=m, stage=s).count()
 
                 score += winning_games + 10*(wrongly_scored_games > 0)
