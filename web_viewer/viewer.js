@@ -546,6 +546,7 @@ export function init() {
 		btn_vr.style.left = 0;
 		btn_vr.addEventListener('click', (e) => {
 			e.stopPropagation();
+			autorotate = false;
 			if (!renderer.xr.isPresenting) {
 				navigator.xr.requestSession('immersive-vr', xr_opts).then((s) => {
 					renderer.xr.setSession(s);
@@ -569,6 +570,7 @@ export function init() {
 		btn_ar.style.left = 0;
 		btn_ar.addEventListener('click', (e) => {
 			e.stopPropagation();
+			autorotate = false;
 			if (!renderer.xr.isPresenting) {
 				navigator.xr.requestSession('immersive-ar', xr_opts).then((s) => {
 					renderer.xr.setSession(s);
