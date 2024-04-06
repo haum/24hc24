@@ -51,7 +51,9 @@ class Team(models.Model):
                 wrongly_scored_games = Score.objects.filter(game__map=m, game__stage=s, referee=self.user, valid=False).count()
                 number_of_games = Game.objects.filter(map=m, stage=s).count()
 
-                score += winning_games + 10*(wrongly_scored_games > 0) + (m.impossible is not None)*m.impossible*number_of_games*10
+                score += winning_games + 10*(wrongly_scored_games > 0)
+                if m.impossible is not None and m.impossible:
+                    score += number_of_games*10
 
         return score
 
