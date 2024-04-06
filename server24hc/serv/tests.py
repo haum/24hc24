@@ -326,7 +326,7 @@ ACC -1 0 0"""
         assert db_game.reference_score == pytest.approx(7.416666, rel=1e-6)
         response = api_client.post(f'/api/game/{self.game.id}/solve', {'moves': first_map_solution})
         assert response.status_code == 403, response.data
-        assert response.data['message'] == 'This game has already been solved'
+        assert response.data['message'] == 'This game has already been played'
 
     def test_inexistent_game(self, api_client, setup_game_firstmap, first_map_solution):
         token = Token.objects.get(user=self.player_user)
@@ -624,7 +624,6 @@ class TestTeamScoreComputation:
         assert team1.score_game == 4
         assert team2.score_game == 3
 
-@pytest.mark.only
 class TestStageMechanics:
 
     def test_unfinished_games_upon_stage_end(self, create_user):
