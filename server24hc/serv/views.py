@@ -199,6 +199,11 @@ class ScoreGameView(APIView):
                     status=status.HTTP_403_FORBIDDEN
                 )
             game = Game.objects.filter(map__proposed_by=referee, stage=stage, score=None, finished=True).order_by('?').first()
+            if game is None:
+                return Response(
+                    {'status': 'error', 'message': 'No game to score'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
             return Response({'status': 'success', 'game_id': game.id, 'map_data': game.map.map_data, 'moves': game.moves, 'stage': stage.endpoint})
         else:
             game = Game.objects.filter(map__proposed_by=referee, score=None, finished=True).order_by('?').first()
