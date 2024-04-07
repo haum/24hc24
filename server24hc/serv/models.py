@@ -24,39 +24,46 @@ class Team(models.Model):
     def compute_score_player(self):
         score = 0
         for s in Stage.objects.filter(dev=False):
-            # score += 10*(s.number_of_maps*(Team.objects.all().count() - 1) - Game.objects.filter(finished=True, player=self.user, stage=s).count())
             for m in s.maps.all():
                 g = Game.objects.filter(map=m, finished=True, stage=s, player=self.user).order_by('-completed_at').first()
                 worst_score = Game.objects.filter(map=m, finished=True, victory=True, stage=s).order_by('-reference_score').first().reference_score
                 best_scored_game = Game.objects.filter(map=m, finished=True, victory=True, stage=s).order_by('reference_score').first()
                 if g is None:
+                    # The team didn't play => 10*worst_score
                     if worst_score is not None:
-                        score +=2*worst_score
-                    else:
-                        score += 50
+                        score += 10*worst_score
+                    else: # If no game has been played on the map => neutralized.
+                        score += 0
                 if best_scored_game is not None:
                     best_score = best_scored_game.reference_score
-                    if g.victory:
-                        current_player_score = g.reference_score
-                        score += current_player_score - best_score
-                    else:
-                        score += 5 + 2*(worst_score - best_score)
+                    current_player_score = g.reference_score
+                    score += current_player_score - best_score
+                    # if the team won => golf score
+                    if not game.victory: # if the team lost => golf score +  2*golf score of the worst game
+                        score += 2*(worst_score - best_score)
         return score
 
     def compute_score_game(self):
         score = 0
         for s in Stage.objects.filter(dev=False):
             if s.number_of_maps > 0:
+                # 100 points for each missing map
                 score += 10*(s.number_of_maps - s.maps.filter(proposed_by=self.user).count())
-                score += 10*(Game.objects.filter(stage=s, map__proposed_by=self.user).exclude(moves='').count() - Score.objects.filter(game__map__proposed_by=self.user, game__stage=s).count())
+                # 20 points for each game played and valid but that hasn't been scored
+                score += 20*(Game.objects.filter(stage=s, map__proposed_by=self.user).exclude(moves='').count() - Score.objects.filter(game__map__proposed_by=self.user, game__stage=s).count())
             for m in s.maps.filter(proposed_by=self.user):
+                # +1 point per winning game on the map
                 winning_games = Game.objects.filter(map=m, finished=True, victory=True, stage=s).count()
-                wrongly_scored_games = Score.objects.filter(game__map=m, game__stage=s, referee=self.user, valid=False).exclude(game__moves='').count()
-                number_of_games = Game.objects.filter(map=m, stage=s).count()
+                score += winning_games
 
-                score += winning_games + 10*(wrongly_scored_games > 0)
+                # +10 points per map with at least one wrongly scored game
+                wrongly_scored_games = Score.objects.filter(game__map=m, game__stage=s, referee=self.user, valid=False).exclude(game__moves='').count()
+                score += 10*(wrongly_scored_games > 0)
+
+                # 20point per game on a map nobody managed to solve (Games *must* provide possible maps)
+                number_of_games = Game.objects.filter(map=m, stage=s).count()
                 if m.impossible is not None and m.impossible:
-                    score += number_of_games*10
+                    score += number_of_games*20
 
         return score
 
