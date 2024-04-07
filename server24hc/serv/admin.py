@@ -43,7 +43,14 @@ class TeamPlayerFilter(admin.SimpleListFilter):
 
 class TeamAdmin(admin.ModelAdmin):
     list_display = ('name', 'position', 'student', 'games_played', 'score_player', 'score_game', 'score_full')
+    actions = ['recompute_score']
 
+    @admin.action(description='Recompute score')
+    def recompute_score(self, request, queryset):
+        for team in queryset:
+            team.score_player = team.compute_score_player()
+            team.score_game = team.compute_score_game()
+            team.save()
 
 class MapAdmin(admin.ModelAdmin):
     list_display = ('id', 'proposed_by', 'size', 'in_stage', 'proposed_at', 'impossible')

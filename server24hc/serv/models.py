@@ -10,6 +10,8 @@ class Team(models.Model):
     position = models.CharField(max_length=250, blank=True, null=True)
     student = models.BooleanField(default=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    score_player = models.FloatField(default=0)
+    score_game = models.FloatField(default=0)
 
     @property
     def games_played(self):
@@ -19,8 +21,7 @@ class Team(models.Model):
     def games_scored(self):
         return Score.objects.filter(referee=self.user).count()
 
-    @property
-    def score_player(self):
+    def compute_score_player(self):
         score = 0
         for s in Stage.objects.filter(dev=False):
             score += 10*(s.number_of_maps*(Team.objects.all().count() - 1) - Game.objects.filter(finished=True, player=self.user, stage=s).count())
@@ -39,8 +40,7 @@ class Team(models.Model):
                         score += 5 + 2*(worst_score - best_score)
         return score
 
-    @property
-    def score_game(self):
+    def compute_score_game(self):
         score = 0
         for s in Stage.objects.filter(dev=False):
             if s.number_of_maps > 0:
