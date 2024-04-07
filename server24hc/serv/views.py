@@ -29,8 +29,8 @@ class TeamView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['team'] = Team.objects.get(user=self.object)
-        context['games_player'] = Game.objects.filter(player=self.object).order_by('-completed_at')
-        games_on_proposed_maps = Game.objects.filter(map__proposed_by=self.object).order_by('-completed_at')
+        context['games_player'] = Game.objects.filter(player=self.object).order_by('-id')[:250]
+        games_on_proposed_maps = Game.objects.filter(map__proposed_by=self.object).order_by('-id')[:250]
         scores = {_.game.id: _.score for _ in Score.objects.filter(referee=self.object)}
         context['games_game'] = [(game, scores.get(game.id, None)) for game in games_on_proposed_maps]
 
@@ -40,7 +40,7 @@ class ListGamesView(ListView):
     model = Game
 
     def get_queryset(self):
-        return Game.objects.all().order_by('-id')[:500]
+        return Game.objects.all().order_by('-id')[:250]
 
 class ListMapsView(ListView):
     model = Map
