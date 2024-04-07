@@ -24,19 +24,22 @@ class Team(models.Model):
     def compute_score_player(self):
         score = 0
         for s in Stage.objects.filter(dev=False):
-            score += 10*(s.number_of_maps*(Team.objects.all().count() - 1) - Game.objects.filter(finished=True, player=self.user, stage=s).count())
+            # score += 10*(s.number_of_maps*(Team.objects.all().count() - 1) - Game.objects.filter(finished=True, player=self.user, stage=s).count())
             for m in s.maps.all():
                 g = Game.objects.filter(map=m, finished=True, stage=s, player=self.user).order_by('-completed_at').first()
-                if g is None:
-                    continue
+                worst_score = Game.objects.filter(map=m, finished=True, victory=True, stage=s).order_by('-reference_score').first().reference_score
                 best_scored_game = Game.objects.filter(map=m, finished=True, victory=True, stage=s).order_by('reference_score').first()
+                if g is None:
+                    if worst_score is not None:
+                        score +=2*worst_score
+                    else:
+                        score += 50
                 if best_scored_game is not None:
                     best_score = best_scored_game.reference_score
                     if g.victory:
                         current_player_score = g.reference_score
                         score += current_player_score - best_score
                     else:
-                        worst_score = Game.objects.filter(map=m, finished=True, victory=True, stage=s).order_by('-reference_score').first().reference_score
                         score += 5 + 2*(worst_score - best_score)
         return score
 
