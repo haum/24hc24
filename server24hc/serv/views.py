@@ -40,7 +40,7 @@ class ListGamesView(ListView):
     model = Game
 
     def get_queryset(self):
-        return Game.objects.all().order_by('-completed_at')[:500]
+        return Game.objects.all().order_by('-id')[:500]
 
 class ListMapsView(ListView):
     model = Map
