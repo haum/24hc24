@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Race viewer</title>
+		<style>
+			html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+			canvas { width: 100vw; height: 100vh; }
+			.presentation .overlay { display: none; }
+			.presentation canvas { cursor: none; }
+		</style>
+		<script type="importmap">
+{
+	"imports": {
+		"three": "https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.module.min.js",
+		"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/",
+		"threejs-StereoscopicEffects": "https://cdn.jsdelivr.net/gh/JackDesBwa/threejs-StereoscopicEffects@1.0.159/src/StereoscopicEffects.min.js",
+		"viewer": "./viewer.js"
+	}
+}
+		</script>
+		<script type="module">
+			import { init, parseCmds } from 'viewer'
+			window.connect_ws = url => {
+				const ws = new WebSocket(url);
+				ws.onmessage = e => parseCmds(e.data);
+			};
+			init();
+		</script>
+	</head>
+	<body>
+	</body>
+</html>

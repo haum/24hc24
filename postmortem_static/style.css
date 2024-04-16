@@ -1,0 +1,186 @@
+/*
+ * style.css
+ *
+ * Copyright (C) 2024 Mathieu Gaborit (matael) <mathieu@matael.org>
+ *
+ * Licensed under the "THE BEER-WARE LICENSE" (Revision 42):
+ * Mathieu (matael) Gaborit wrote this file. As long as you retain this notice you
+ * can do whatever you want with this stuff. If we meet some day, and you think
+ * this stuff is worth it, you can buy me a beer or coffee in return
+ *
+ */
+
+body {
+	color: white;
+	font-family: Arial, sans-serif;
+	width: 1250px;
+	margin: 0 auto;
+	background-image: url("bg.webp");
+	background-size: 100% 100%;
+	background-attachment: fixed;
+	color: white;
+
+}
+
+table {
+	border-collapse: collapse;
+}
+
+header h1 {
+	transform: rotate(-1.5deg);
+	padding: .4em 0;
+	font-size: 3.3em;
+	text-align: center;
+	font-family: Aquire, Arial, sans-serif;
+}
+
+header h1 a {
+	color: white;
+	text-decoration: none;
+	text-shadow: 0px 0px 20px rgba(0,0,0,0.7);
+}
+
+
+header h1 a:hover {
+	color: white;
+	text-decoration: none;
+}
+
+a {
+	color: white;
+	text-decoration: none;
+	font-weight: bold;
+}
+
+.wide a:hover, a:hover {
+	transform: scale(1.1) rotate(-2deg);
+}
+
+#content h1 {
+	font-size: 1.8em;
+	font-family: Aquire, Arial, sans-serif;
+	border-bottom: 2px solid white;
+}
+
+#content h2 {
+	font-size: 1.1em;
+	font-family: Aquire, Arial, sans-serif;
+	color: #f0f0f0;
+}
+
+#content {
+	font-size: 1.2em;
+}
+
+#menu {
+	width: 100%;
+	text-align: center;
+	font-weight: bold;
+	font-size: 1.5em;
+	margin-bottom: 10px;
+	padding: 0;
+}
+
+#menu ul {
+	margin: 0;
+	padding: 0;
+	list-style-type: none;
+}
+
+#menu ul li {
+	display: inline;
+}
+
+#menu ul li a {
+	background-color: rgba(255,255,255,0.2);
+	vertical-align: middle;
+	/* padding: 0.5em 3em; */
+	width: 8em;
+	padding: 0.5em 0 0.5em 0;
+	margin: .5em;
+	display: inline-block;
+	border: 2px solid transparent;
+}
+
+#menu ul li a:hover {
+	background-color: rgba(255,255,255,0.0);
+	border: 2px solid white;
+	transform: scale(1) rotate(0deg);
+	transform: rotate(-2deg);
+}
+
+#leaderboard {
+	width: 100%;
+}
+
+table a {
+	display: block;
+}
+
+#leaderboard td, #leaderboard th {
+	text-align: center;
+}
+#leaderboard tr  td:first-child {
+		text-align: left;
+}
+
+#leaderboard tr:nth-child(odd):not(:first-child),
+table.wide tr:nth-child(odd):not(:first-child) {
+	background-color: rgba(255,255,255,0.1);
+}
+
+#leaderboard tr:first-child {
+	border-bottom: 2px solid white;
+	color: #454545;
+	font-family: Aquire, Arial, sans-serif;
+	font-weight: bold;
+}
+
+footer {
+	width: 1250px;
+	font-size: 10pt;
+	height: 2em;
+	text-align: center;
+	bottom: 0;
+	margin-top: 10px;
+}
+
+/* Teams */
+
+#teaminfos {
+	width: 400px;
+	margin: 0 auto;
+	background-color: rgba(0,0,0,0.2);
+	box-shadow: 0px 0px 10px 10px rgba(0,0,0,0.2);
+}
+
+th {
+	color: #454545;
+	border-bottom: 2px solid white;
+	font-family: Aquire, Arial, sans-serif;
+	font-weight: bold;
+}
+
+#teaminfos tr td {
+	text-align: center;
+	padding: 0.5em;
+}
+
+#teaminfos tr td:first-child {
+	text-align: left;
+	font-family: Aquire, Arial, sans-serif;
+	border-right: 2px solid white;
+	padding-right: 0;
+	font-weight: bold;
+}
+
+table.wide {
+	width: 100%;
+}
+
+table.wide tr td {
+	text-align: center;
+}
+
+tr.ok { border-right: 5px solid #0a0; }
+tr.ko { border-right: 5px solid #a00; }
