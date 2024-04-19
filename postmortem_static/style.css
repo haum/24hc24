@@ -12,13 +12,13 @@
 
 body {
 	color: white;
+	background-color: #978666;
 	font-family: Arial, sans-serif;
 	width: 1250px;
 	margin: 0 auto;
 	background-image: url("bg.webp");
 	background-size: 100% 100%;
 	background-attachment: fixed;
-	color: white;
 
 }
 
